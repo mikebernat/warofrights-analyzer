@@ -104,7 +104,10 @@ const chartOption = computed(() => {
       trigger: 'axis'
     },
     legend: {
-      data: ['USA', 'CSA', 'Unknown']
+      data: ['USA', 'CSA', 'Unknown'],
+      textStyle: {
+        color: '#ffffff'
+      }
     },
     grid: {
       left: '3%',
