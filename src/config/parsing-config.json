@@ -2,6 +2,18 @@
   "idleGapSeconds": 300,
   "regimentPatterns": [
     {
+      "name": "Clan at Start Before Rank",
+      "pattern": "^([A-Z]{2,4})[-\\s]",
+      "description": "Extracts clan tag at start followed by dash or space (e.g., II-Brig.Gen, II 6th)",
+      "extractGroup": 1
+    },
+    {
+      "name": "Bracket Missing Close with Company",
+      "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?)[\\(]",
+      "description": "Extracts regiment from bracket missing close bracket (e.g., [59th(A))",
+      "extractGroup": 1
+    },
+    {
       "name": "Prefix Before Any Wrapper",
       "pattern": "^([A-Za-z]{2,4})\\s*-?\\s*[\\[\\{\\(][^\\]\\}\\)]+[\\]\\}\\)]",
       "description": "Extracts prefix before any wrapper (brackets, braces, parens) with optional spaces, case-insensitive",
@@ -107,8 +119,8 @@
     },
     {
       "name": "Unit at Start",
-      "pattern": "^([0-9]+(?:st|nd|rd|th)?\\s*[A-Z]{2,4})",
-      "description": "Unit token at start with optional space (e.g., 5thFla, 59th NY)"
+      "pattern": "^([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})",
+      "description": "Unit token at start with optional space (e.g., 5thFla, 5thFLA, 59th NY)"
     },
     {
       "name": "Prefix Acronyms",
