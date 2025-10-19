@@ -136,7 +136,7 @@ import { useLogStore } from '../stores/logStore'
 const logStore = useLogStore()
 
 const searchPlayer = ref('')
-const filterRegiment = ref(null)
+const filterRegiment = ref('Uncategorized')
 const showDebugDialog = ref(false)
 const debugReport = ref('')
 
