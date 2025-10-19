@@ -1,0 +1,293 @@
+import { expose } from 'comlink'
+import parsingConfig from '../config/parsing-config.json'
+
+class LogParser {
+  constructor() {
+    this.config = parsingConfig
+  }
+
+  /**
+   * Extract regiment from player name using configured patterns
+   */
+  extractRegiment(playerName) {
+    for (const pattern of this.config.regimentPatterns) {
+      const regex = new RegExp(pattern.pattern)
+      const match = playerName.match(regex)
+      if (match) {
+        const extractGroup = pattern.extractGroup || 1
+        let regiment = match[extractGroup]?.trim() || match[1]?.trim()
+        
+        // Normalize regiment name
+        if (regiment) {
+          regiment = this.normalizeRegiment(regiment)
+        }
+        
+        return regiment
+      }
+    }
+    return 'Uncategorized'
+  }
+
+  /**
+   * Normalize regiment name by removing company designators and special characters
+   */
+  normalizeRegiment(regiment) {
+    // Remove trailing company letters with optional dots (e.g., ".C", ".I", ".G")
+    regiment = regiment.replace(/\.[A-Z](\*)?$/i, '')
+    
+    // Remove trailing asterisks
+    regiment = regiment.replace(/\*+$/, '')
+    
+    // Remove standalone company letters at the end (e.g., "10thUS C" -> "10thUS")
+    regiment = regiment.replace(/\s+[A-Z](\*)?$/i, '')
+    
+    // Normalize spacing (remove all spaces)
+    regiment = regiment.replace(/\s+/g, '')
+    
+    // Convert entire string to uppercase for consistent comparison
+    regiment = regiment.toUpperCase()
+    
+    // Normalize ordinals to lowercase (e.g., "30TH" -> "30th", "1ST" -> "1st")
+    regiment = regiment.replace(/(\d+)(ST|ND|RD|TH)/g, (match, num, ordinal) => {
+      return num + ordinal.toLowerCase()
+    })
+    
+    // Trim any remaining whitespace
+    regiment = regiment.trim()
+    
+    return regiment
+  }
+
+  /**
+   * Parse timestamp from log line
+   */
+  parseTimestamp(line) {
+    const match = line.match(/<(\d{2}):(\d{2}):(\d{2})>/)
+    if (match) {
+      const hours = parseInt(match[1])
+      const minutes = parseInt(match[2])
+      const seconds = parseInt(match[3])
+      return hours * 3600 + minutes * 60 + seconds
+    }
+    return null
+  }
+
+  /**
+   * Parse a single log file
+   */
+  async parseLog(logContent, onProgress) {
+    const lines = logContent.split('\n')
+    const events = []
+    const warnings = []
+    
+    let initialized = false
+    let currentRound = null
+    let roundCounter = 0
+    let lastEventTime = null
+    let currentMap = null
+    let currentGameRules = null
+
+    for (let i = 0; i < lines.length; i++) {
+      const line = lines[i]
+      
+      // Report progress every 1000 lines
+      if (i % 1000 === 0 && onProgress) {
+        onProgress({ current: i, total: lines.length })
+      }
+
+      // Wait for initialization
+      if (!initialized) {
+        if (line.includes('[CWarOfRightsGame] Initialized')) {
+          initialized = true
+        }
+        continue
+      }
+
+      const timestamp = this.parseTimestamp(line)
+      if (!timestamp) continue
+
+      // Track game rules
+      if (line.includes('Game rules class:')) {
+        const match = line.match(/Game rules class:\s*(\w+)/)
+        if (match) {
+          currentGameRules = match[1]
+        }
+      }
+
+      // Track map changes
+      if (line.includes('PrepareLevel')) {
+        const match = line.match(/PrepareLevel\s+(\w+)/)
+        if (match) {
+          const newMap = match[1]
+          
+          // Close previous round if exists (map-bounded)
+          if (currentRound && currentRound.map) {
+            currentRound.endTime = lastEventTime || timestamp
+            currentRound.status = 'Incomplete'
+            warnings.push({
+              type: 'incomplete',
+              message: `Round ${currentRound.id} on ${currentRound.map} ended without victory (map change)`
+            })
+          }
+          
+          currentMap = newMap
+          currentRound = null
+        }
+      }
+
+      // Track round start
+      if (line.includes('CGameRulesEventHelper::OnRoundStarted')) {
+        // Close previous round if exists
+        if (currentRound) {
+          currentRound.endTime = lastEventTime || timestamp
+          currentRound.status = 'Incomplete'
+          warnings.push({
+            type: 'incomplete',
+            message: `Round ${currentRound.id} ended without victory (new round started)`
+          })
+        }
+
+        roundCounter++
+        currentRound = {
+          id: roundCounter,
+          startTime: timestamp,
+          endTime: null,
+          map: currentMap || 'Unknown Map',
+          gameRules: currentGameRules,
+          status: 'Incomplete',
+          winner: null,
+          respawns: []
+        }
+      }
+
+      // Track victory
+      if (line.includes('CGameRulesEventHelper::OnVictory')) {
+        const match = line.match(/TeamID:\s*(\d+)/)
+        if (match && currentRound) {
+          currentRound.endTime = timestamp
+          currentRound.status = 'Complete'
+          const teamId = parseInt(match[1])
+          currentRound.winner = teamId === 0 ? 'CSA' : teamId === 1 ? 'USA' : teamId === 2 ? 'USA' : 'Unknown'
+        }
+      }
+
+      // Track respawns
+      if (line.includes('[CPlayer::ClDoRespawn]')) {
+        const match = line.match(/\[CPlayer::ClDoRespawn\]\s+"([^"]+)"/)
+        if (match) {
+          const playerName = match[1]
+          const regiment = this.extractRegiment(playerName)
+          
+          // Skip respawns in the first 60 seconds of a round
+          if (currentRound && (timestamp - currentRound.startTime) < 60) {
+            continue
+          }
+
+          // Check for idle gap (pseudo-round creation)
+          if (lastEventTime && (timestamp - lastEventTime) > this.config.idleGapSeconds) {
+            // Close previous round
+            if (currentRound) {
+              currentRound.endTime = lastEventTime
+              currentRound.status = 'Incomplete'
+            }
+
+            // Create pseudo-round
+            roundCounter++
+            currentRound = {
+              id: roundCounter,
+              startTime: timestamp,
+              endTime: null,
+              map: 'Unknown Map',
+              gameRules: null,
+              status: 'Pseudo',
+              winner: null,
+              respawns: []
+            }
+            
+            warnings.push({
+              type: 'pseudo',
+              message: `Pseudo-round ${roundCounter} created after ${this.config.idleGapSeconds}s idle gap`
+            })
+          }
+
+          // Create round if none exists
+          if (!currentRound) {
+            roundCounter++
+            currentRound = {
+              id: roundCounter,
+              startTime: timestamp,
+              endTime: null,
+              map: currentMap || 'Unknown Map',
+              gameRules: currentGameRules,
+              status: 'Incomplete',
+              winner: null,
+              respawns: []
+            }
+          }
+
+          const event = {
+            time: timestamp,
+            player: playerName,
+            regiment: regiment,
+            roundId: currentRound.id,
+            map: currentRound.map
+          }
+
+          events.push(event)
+          currentRound.respawns.push(event)
+          lastEventTime = timestamp
+        }
+      }
+    }
+
+    // Close final round if incomplete
+    if (currentRound && currentRound.status === 'Incomplete') {
+      currentRound.endTime = lastEventTime || currentRound.startTime
+      warnings.push({
+        type: 'incomplete',
+        message: `Round ${currentRound.id} ended without victory (end of log)`
+      })
+    }
+
+    // Collect all rounds
+    const rounds = []
+    let tempRound = null
+    
+    for (const event of events) {
+      if (!tempRound || tempRound.id !== event.roundId) {
+        if (tempRound) rounds.push(tempRound)
+        tempRound = {
+          id: event.roundId,
+          startTime: event.time,
+          endTime: event.time,
+          map: event.map,
+          status: 'Incomplete',
+          respawns: []
+        }
+      }
+      tempRound.respawns.push(event)
+      tempRound.endTime = event.time
+    }
+    if (tempRound) rounds.push(tempRound)
+
+    if (onProgress) {
+      onProgress({ current: lines.length, total: lines.length })
+    }
+
+    return {
+      events,
+      rounds,
+      warnings,
+      stats: {
+        totalRespawns: events.length,
+        totalRounds: rounds.length,
+        maps: [...new Set(events.map(e => e.map))],
+        players: [...new Set(events.map(e => e.player))].length,
+        regiments: [...new Set(events.map(e => e.regiment))].length
+      }
+    }
+  }
+}
+
+const parser = new LogParser()
+expose(parser)

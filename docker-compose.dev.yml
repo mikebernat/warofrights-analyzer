@@ -1,0 +1,20 @@
+version: '3.8'
+
+services:
+  wor-log-analyzer-dev:
+    build:
+      context: .
+      dockerfile: Dockerfile.dev
+    container_name: wor-log-analyzer-dev
+    ports:
+      - "5173:5173"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - VITE_HOST=0.0.0.0
+    stdin_open: true
+    tty: true
+    labels:
+      - "com.wor-log-analyzer.description=War of Rights Log Analyzer (Development)"

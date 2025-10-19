@@ -1,0 +1,15 @@
+version: '3.8'
+
+services:
+  wor-log-analyzer:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: wor-log-analyzer
+    ports:
+      - "8080:80"
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=production
+    labels:
+      - "com.wor-log-analyzer.description=War of Rights Log Analyzer"

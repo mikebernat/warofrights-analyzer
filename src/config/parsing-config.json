@@ -1,0 +1,158 @@
+{
+  "idleGapSeconds": 300,
+  "regimentPatterns": [
+    {
+      "name": "Prefix Before Any Wrapper",
+      "pattern": "^([A-Za-z]{2,4})\\s*-?\\s*[\\[\\{\\(][^\\]\\}\\)]+[\\]\\}\\)]",
+      "description": "Extracts prefix before any wrapper (brackets, braces, parens) with optional spaces, case-insensitive",
+      "extractGroup": 1
+    },
+    {
+      "name": "Mismatched Wrapper at Start",
+      "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?[A-Za-z]{2,4})[\\}\\)]",
+      "description": "Extracts regiment from mismatched wrappers at start (e.g., [51STAL}, [59th(A))",
+      "extractGroup": 1
+    },
+    {
+      "name": "Bracket with Space and Company",
+      "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?\\s+[A-Z]{2,4})\\s+\\([A-Z]\\)",
+      "description": "Extracts regiment from bracket with space and company (e.g., [59th NY (A))",
+      "extractGroup": 1
+    },
+    {
+      "name": "Ordinal with Abbreviated State",
+      "pattern": "^([0-9]+(?:st|nd|rd|th)?)\\s+([A-Z][a-z]\\.)",
+      "description": "Extracts regiment from ordinal with abbreviated state (e.g., 5th Fl.)",
+      "extractGroup": 0
+    },
+    {
+      "name": "Dash Space Pattern",
+      "pattern": "^([A-Z]{2,4})\\s+-\\s+",
+      "description": "Extracts prefix before dash with spaces (e.g., PA - Ninja)",
+      "extractGroup": 1
+    },
+    {
+      "name": "Regiment Before Company Bracket",
+      "pattern": "^([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\[[A-Z]+\\]",
+      "description": "Extracts regiment before company letter in brackets (e.g., 5thFLA[A])",
+      "extractGroup": 1
+    },
+    {
+      "name": "Brackets at Start with Company",
+      "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\.[A-Z]+\\]",
+      "description": "Extracts regiment from brackets with company suffix (e.g., [12thVA.A], [12thVA.BB])",
+      "extractGroup": 1
+    },
+    {
+      "name": "Clan-Regiment-Company Pattern",
+      "pattern": "^([A-Z]{2,4})-([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\([A-Z]\\)",
+      "description": "Matches II-6thLA(A) format - extracts full regiment with company",
+      "extractGroup": 0
+    },
+    {
+      "name": "Clan-Regiment Pattern",
+      "pattern": "^([A-Z]{2,4})-([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})",
+      "description": "Matches II-6thLA, TKO-3RDKY format",
+      "extractGroup": 0
+    },
+    {
+      "name": "Parentheses Regiment",
+      "pattern": "\\(([0-9]+(?:st|nd|rd|th)?\\s*[A-Z]{2,4})\\)",
+      "description": "Extracts regiment from parentheses like (12th VA), (1stMO)"
+    },
+    {
+      "name": "Parentheses Company Only",
+      "pattern": "([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\([A-Z]+\\)",
+      "description": "Extracts regiment before company marker like 6thLA(A), 59thNY(A)",
+      "extractGroup": 1
+    },
+    {
+      "name": "Square Brackets",
+      "pattern": "\\[([^\\]]+)\\]",
+      "description": "Extracts leftmost [] token"
+    },
+    {
+      "name": "Curly Braces",
+      "pattern": "\\{([^}]+)\\}",
+      "description": "Extracts leftmost {} token"
+    },
+    {
+      "name": "Pipe Delimiter",
+      "pattern": "^([^|]+)\\|",
+      "description": "Extracts clan before pipe (e.g., SR|3AR)"
+    },
+    {
+      "name": "Underscore Delimiter",
+      "pattern": "^([A-Z]+)_([0-9]+(?:st|nd|rd|th)?[A-Z]+)",
+      "description": "Extracts regiment from underscore format (e.g., CB_8ThOhio)",
+      "extractGroup": 2
+    },
+    {
+      "name": "Clan Prefix with Dash",
+      "pattern": "^([A-Z]{2,4})\\s*-\\s*([0-9]+(?:st|nd|rd|th)?\\s*[A-Z]{2,4})",
+      "description": "Handles spaced dash format like 'II - 6thLA'",
+      "extractGroup": 2
+    },
+    {
+      "name": "Clan with Brackets",
+      "pattern": "([A-Z]{2,4})-\\[([^\\]]+)\\]",
+      "description": "Clan prefix with bracket combo (e.g., JD-[38th Va])",
+      "extractGroup": 2
+    },
+    {
+      "name": "Clan with Braces",
+      "pattern": "([A-Z]{2,4})\\{([^}]+)\\}",
+      "description": "Clan prefix with brace combo",
+      "extractGroup": 2
+    },
+    {
+      "name": "Unit at Start",
+      "pattern": "^([0-9]+(?:st|nd|rd|th)?\\s*[A-Z]{2,4})",
+      "description": "Unit token at start with optional space (e.g., 5thFla, 59th NY)"
+    },
+    {
+      "name": "Prefix Acronyms",
+      "pattern": "^(CQB|MSG|AVC|FSB)\\s*\\(?([^)]+)?\\)?",
+      "description": "Common regiment prefixes like CQB, MSG, AVC, FSB",
+      "extractGroup": 1
+    }
+  ],
+  "rankPatterns": [
+    "Pvt\\.?",
+    "Pv2\\.?",
+    "Pfc\\.?",
+    "PFC\\.?",
+    "SrPvt\\.?",
+    "Cpl\\.?",
+    "Sgt\\.?",
+    "SGM\\.?",
+    "1stSgt\\.?",
+    "SgtMaj\\.?",
+    "2ndLt\\.?",
+    "1stLt\\.?",
+    "Lt\\.?",
+    "Capt\\.?",
+    "Cpt\\.?",
+    "Maj\\.?",
+    "LtCol\\.?",
+    "Col\\.?",
+    "BrigGen\\.?",
+    "Brig\\.Gen\\.?",
+    "MajGen\\.?",
+    "Rct\\.?",
+    "Vol\\.?",
+    "Adj\\.?",
+    "QMSgt\\.?",
+    "OrdSgt\\.?",
+    "Chap\\.?",
+    "Gun Cpt\\.?",
+    "Gnr\\.?",
+    "DrumMaj\\.?",
+    "RGrd\\.?"
+  ],
+  "topNDefaults": {
+    "regimentBar": 10,
+    "playerBar": 10,
+    "regimentTimeline": 5
+  }
+}
