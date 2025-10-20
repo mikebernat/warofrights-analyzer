@@ -1,11 +1,37 @@
 version: '3.8'
 
 services:
+  # Backend API Server (Development)
+  wor-api-dev:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    container_name: wor-log-analyzer-api-dev
+    ports:
+      - "3001:3001"
+    volumes:
+      - ./server:/app
+      - ./sharedAnalysis:/app/sharedAnalysis
+      - /app/node_modules
+    environment:
+      - NODE_ENV=development
+      - PORT=3001
+      - SHARE_EXPIRATION_DAYS=30
+      - RATE_LIMIT_WINDOW_MS=900000
+      - RATE_LIMIT_MAX_REQUESTS=10
+      - CORS_ORIGIN=http://localhost:5173
+    command: npm run dev
+    networks:
+      - wor-network-dev
+    labels:
+      - "com.wor-log-analyzer.description=War of Rights Log Analyzer API (Development)"
+
+  # Frontend Application (Development)
   wor-log-analyzer-dev:
     build:
       context: .
       dockerfile: Dockerfile.dev
-    container_name: wor-log-analyzer-dev
+    container_name: wor-log-analyzer-frontend-dev
     ports:
       - "5173:5173"
     volumes:
@@ -14,7 +40,16 @@ services:
     environment:
       - NODE_ENV=development
       - VITE_HOST=0.0.0.0
+      - VITE_API_URL=http://localhost:3001
+    depends_on:
+      - wor-api-dev
     stdin_open: true
     tty: true
+    networks:
+      - wor-network-dev
     labels:
-      - "com.wor-log-analyzer.description=War of Rights Log Analyzer (Development)"
+      - "com.wor-log-analyzer.description=War of Rights Log Analyzer Frontend (Development)"
+
+networks:
+  wor-network-dev:
+    driver: bridge

@@ -1,5 +1,7 @@
 # Docker Quick Reference Guide
 
+> **Note:** For comprehensive deployment instructions including the backend API, see [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
+
 ## Development vs Production
 
 ### When to use Development Mode

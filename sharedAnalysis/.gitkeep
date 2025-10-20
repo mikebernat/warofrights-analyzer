@@ -1,0 +1,2 @@
+# This file ensures the sharedAnalysis directory is tracked in git
+# The actual share files are ignored via .gitignore

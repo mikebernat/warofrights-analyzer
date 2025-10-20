@@ -1,0 +1,23 @@
+# Docker Compose Override Example
+# Copy this file to docker-compose.override.yml and customize as needed
+# This file allows you to override settings without modifying the main docker-compose.yml
+
+version: '3.8'
+
+services:
+  wor-api:
+    environment:
+      # Override API configuration
+      - SHARE_EXPIRATION_DAYS=60  # Extend to 60 days
+      - RATE_LIMIT_MAX_REQUESTS=20  # Allow more requests
+      # - CORS_ORIGIN=https://yourdomain.com  # Custom domain
+    ports:
+      # - "3002:3001"  # Use different host port
+    # volumes:
+      # - /custom/path/sharedAnalysis:/app/sharedAnalysis  # Custom storage location
+
+  wor-log-analyzer:
+    environment:
+      # - VITE_API_URL=http://yourdomain.com:3001  # Custom API URL
+    ports:
+      # - "8081:80"  # Use different host port

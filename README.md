@@ -15,37 +15,41 @@ A single-page web application for analyzing War of Rights game logs. Built with 
   - Top 5 regiments over time (multi-line chart)
 - **Round Detection**: Automatically detects rounds from OnRoundStarted/OnVictory events
 - **Pseudo-Round Creation**: Groups activity after 5-minute idle gaps
-- **Warnings Panel**: Displays incomplete rounds and pseudo-rounds
 - **CSV Export**: Export raw respawn data (Time, Player, Regiment, RoundId, Map)
 - **LocalStorage Caching**: Keeps most recent log cached for quick access
+- **Share Analysis**: Generate shareable links to analysis (requires backend server)
+  - Share specific rounds with others
+  - URL-based filter parameters (time range, player/regiment filters)
+  - Automatic expiration after 30 days
+  - Privacy-focused: only parsed data is shared, not original logs
 
 ## Installation
 
-### Option 1: Docker
+### Option 1: Docker (Recommended)
 
-#### Production Mode (Recommended for deployment)
+> **Full Stack Deployment:** See [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) for comprehensive instructions including backend API.
 
-**Using Docker Compose:**
+#### Production Mode (Full Stack)
+
+**Start all services (Frontend + Backend API):**
 ```bash
 docker-compose up -d
 ```
 
-The application will be available at `http://localhost:8080`
+**Access:**
+- Frontend: http://localhost:8080
+- Backend API: http://localhost:3001
 
-**Using Docker directly:**
-```bash
-# Build the image
-docker build -t wor-log-analyzer .
+**Features:**
+- ✅ Frontend served by Nginx
+- ✅ Backend API for sharing
+- ✅ Persistent storage for shared analyses
+- ✅ Automatic restarts
+- ✅ Health checks
 
-# Run the container
-docker run -d -p 8080:80 --name wor-log-analyzer wor-log-analyzer
-```
-
-**Stop the container:**
+**Stop services:**
 ```bash
 docker-compose down
-# or
-docker stop wor-log-analyzer
 ```
 
 #### Development Mode (with hot-reload)
@@ -87,14 +91,42 @@ npm run dev
 npm run build
 ```
 
+## Backend Server (Optional - for Sharing)
+
+The sharing feature requires a Node.js backend server.
+
+**Setup:**
+```bash
+cd server
+npm install
+cp .env.example .env  # Configure as needed
+npm start
+```
+
+**Configuration:**
+- `PORT`: Server port (default: 3001)
+- `SHARE_EXPIRATION_DAYS`: Days until shares expire (default: 30)
+- `RATE_LIMIT_MAX_REQUESTS`: Max shares per window (default: 10)
+- `RATE_LIMIT_WINDOW_MS`: Rate limit window in ms (default: 15 minutes)
+
+**Cleanup Cron Job:**
+```bash
+# Run daily at 2 AM
+0 2 * * * /path/to/server/cron-cleanup.sh
+```
+
+See `server/README.md` for detailed documentation.
+
 ## Usage
 
 1. Click "Select War of Rights log file" and choose a .log file
 2. Wait for parsing to complete (progress bar shown)
-3. Use the time slider to filter by time range
-4. Use the search box to filter by player or regiment name
-5. View analytics in the various charts
-6. Export data to CSV if needed
+3. Select a round to analyze
+4. Use the time slider to filter by time range
+5. Use the search box to filter by player or regiment name
+6. View analytics in the various charts
+7. Export data to CSV if needed
+8. Click "Share" to generate a shareable link (requires backend server)
 
 ## Log File Location
 
