@@ -59,10 +59,30 @@ const roundOptions = computed(() => {
     
     const respawnCount = round.respawns?.length || 0
     
+    // Format start and end times in UTC
+    const startDate = new Date(round.startTime * 1000)
+    const endDate = new Date(round.endTime * 1000)
+    
+    // Get time in 12-hour format (e.g., "7:31pm")
+    const startTimeStr = startDate.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'UTC'
+    }).toLowerCase().replace(/\s/g, '')
+    
+    const endTimeStr = endDate.toLocaleTimeString('en-US', { 
+      hour: 'numeric', 
+      minute: '2-digit',
+      hour12: true,
+      timeZone: 'UTC'
+    }).toLowerCase().replace(/\s/g, '')
+    
     let title = `Round ${round.id}`
     if (round.map) {
       title += ` - ${round.map}`
     }
+    title += ` ${startTimeStr} - ${endTimeStr}`
     title += ` (${durationStr}, ${respawnCount} respawns)`
     
     return {
