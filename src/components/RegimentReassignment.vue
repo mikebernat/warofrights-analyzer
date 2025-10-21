@@ -4,6 +4,31 @@
         Reassign players to correct regiments. Changes apply to all their respawns. Select multiple players for mass updates.
       </v-alert>
 
+      <!-- Filter controls -->
+      <v-row class="mb-4">
+        <v-col cols="12" md="6">
+          <v-text-field
+            v-model="searchPlayer"
+            label="Search Players"
+            prepend-inner-icon="mdi-magnify"
+            variant="outlined"
+            density="compact"
+            clearable
+          ></v-text-field>
+        </v-col>
+        <v-col cols="12" md="6">
+          <v-select
+            v-model="filterRegiment"
+            :items="regimentFilterOptions"
+            label="Filter by Regiment"
+            prepend-inner-icon="mdi-filter"
+            variant="outlined"
+            density="compact"
+            clearable
+          ></v-select>
+        </v-col>
+      </v-row>
+
       <!-- Mass update controls -->
       <v-card v-if="selectedPlayers.length > 0" class="mb-4" color="primary" variant="tonal">
         <v-card-text>
@@ -42,31 +67,6 @@
           </v-row>
         </v-card-text>
       </v-card>
-
-      <!-- Filter controls -->
-      <v-row class="mb-4">
-        <v-col cols="12" md="6">
-          <v-text-field
-            v-model="searchPlayer"
-            label="Search Players"
-            prepend-inner-icon="mdi-magnify"
-            variant="outlined"
-            density="compact"
-            clearable
-          ></v-text-field>
-        </v-col>
-        <v-col cols="12" md="6">
-          <v-select
-            v-model="filterRegiment"
-            :items="regimentFilterOptions"
-            label="Filter by Regiment"
-            prepend-inner-icon="mdi-filter"
-            variant="outlined"
-            density="compact"
-            clearable
-          ></v-select>
-        </v-col>
-      </v-row>
 
       <!-- Players table -->
       <v-data-table
@@ -116,7 +116,10 @@
 
       <!-- Action buttons -->
       <v-row class="mt-4">
-        <v-col>
+        <v-col cols="auto">
+          <RegimentFuzzyMatcher />
+        </v-col>
+        <v-col cols="auto">
           <v-btn
             color="info"
             prepend-icon="mdi-bug"
@@ -174,6 +177,7 @@
 <script setup>
 import { ref, computed } from 'vue'
 import { useLogStore } from '../stores/logStore'
+import RegimentFuzzyMatcher from './RegimentFuzzyMatcher.vue'
 
 const logStore = useLogStore()
 
