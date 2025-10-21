@@ -30,6 +30,13 @@
       "normalize": "extractJD"
     },
     {
+      "name": "V Clan with Dash and Wrapper",
+      "pattern": "^V\\s*-\\s*[\\[\\{\\(]",
+      "description": "Extracts V clan when followed by dash and wrapper (e.g., V-[1stMD.Cav], V-[8thCT], V-(65thIL))",
+      "extractGroup": 0,
+      "normalize": "extractV"
+    },
+    {
       "name": "CB Clan with Parens",
       "pattern": "^CB\\s*\\(",
       "description": "Extracts CB clan when followed by parentheses (e.g., CB(8thOh))",

@@ -29,6 +29,8 @@ class LogParser {
           regiment = 'TKO'
         } else if (pattern.normalize === 'extractJD') {
           regiment = 'JD'
+        } else if (pattern.normalize === 'extractV') {
+          regiment = 'V'
         }
         
         // Normalize regiment name
@@ -150,12 +152,12 @@ describe('Regiment Parser', () => {
       expect(parser.extractRegiment('[8thCT.Cav]1Sgt. Mucho Bitey')).toBe('8thCT')
     })
 
-    it('should extract 1stMD from V-[1stMD.Cav]SgtMaj.UMP45', () => {
-      expect(parser.extractRegiment('V-[1stMD.Cav]SgtMaj.UMP45')).toBe('1stMD')
+    it('should extract V from V-[1stMD.Cav]SgtMaj.UMP45 (clan extraction)', () => {
+      expect(parser.extractRegiment('V-[1stMD.Cav]SgtMaj.UMP45')).toBe('V')
     })
 
-    it('should extract 65thIL from V-[65th-IL]PVT.Dman2112g', () => {
-      expect(parser.extractRegiment('V-[65th-IL]PVT.Dman2112g')).toBe('65thIL')
+    it('should extract V from V-[65th-IL]PVT.Dman2112g (clan extraction)', () => {
+      expect(parser.extractRegiment('V-[65th-IL]PVT.Dman2112g')).toBe('V')
     })
 
     it('should extract 65thIL from {65th IL} Fire Truck', () => {
@@ -288,6 +290,40 @@ describe('Regiment Parser', () => {
 
     it('should extract AVC from AVC[8thAL]DrumMaj.Bootystyx', () => {
       expect(parser.extractRegiment('AVC[8thAL]DrumMaj.Bootystyx')).toBe('AVC')
+    })
+  })
+
+  describe('V Clan Format', () => {
+    it('should extract V from V-[1stMD.Cav]SgtMaj.UMP45', () => {
+      expect(parser.extractRegiment('V-[1stMD.Cav]SgtMaj.UMP45')).toBe('V')
+    })
+
+    it('should extract V from V-[8thCT]Col. Ender', () => {
+      expect(parser.extractRegiment('V-[8thCT]Col. Ender')).toBe('V')
+    })
+
+    it('should extract V from V-[65thIL] SGM. Poff', () => {
+      expect(parser.extractRegiment('V-[65thIL] SGM. Poff')).toBe('V')
+    })
+
+    it('should extract V from V-{65thIL} SGM Robert Plunkett', () => {
+      expect(parser.extractRegiment('V-{65thIL} SGM Robert Plunkett')).toBe('V')
+    })
+
+    it('should extract V from V-(65thIL) Cpl. Ace', () => {
+      expect(parser.extractRegiment('V-(65thIL) Cpl. Ace')).toBe('V')
+    })
+
+    it('should extract V from V-[8thCT{D}]Pvt.WardHarvey', () => {
+      expect(parser.extractRegiment('V-[8thCT{D}]Pvt.WardHarvey')).toBe('V')
+    })
+
+    it('should extract V from V-[8thCT(A)]Cpt. Gregor', () => {
+      expect(parser.extractRegiment('V-[8thCT(A)]Cpt. Gregor')).toBe('V')
+    })
+
+    it('should extract V from V- [1STMD.D] Pfc.McSpanky (with space after dash)', () => {
+      expect(parser.extractRegiment('V- [1STMD.D] Pfc.McSpanky')).toBe('V')
     })
   })
 

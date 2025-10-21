@@ -26,6 +26,8 @@ class LogParser {
           regiment = 'TKO'
         } else if (pattern.normalize === 'extractJD') {
           regiment = 'JD'
+        } else if (pattern.normalize === 'extractV') {
+          regiment = 'V'
         }
         
         // Normalize regiment name
