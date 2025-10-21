@@ -50,6 +50,11 @@ import { useLogStore } from '../stores/logStore'
 const logStore = useLogStore()
 const selectedRound = ref(null)
 
+// Sync local ref with store on mount and when store changes
+watch(() => logStore.selectedRoundId, (newRoundId) => {
+  selectedRound.value = newRoundId
+}, { immediate: true })
+
 const roundOptions = computed(() => {
   return logStore.rounds.map(round => {
     const duration = round.endTime - round.startTime
