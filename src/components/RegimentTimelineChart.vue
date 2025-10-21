@@ -2,10 +2,10 @@
   <v-card>
     <v-card-title class="text-h6">
       <v-icon class="mr-2">mdi-chart-timeline-variant</v-icon>
-      Top 5 Regiment Respawns Over Time
+      Regiment Respawns Over Time
     </v-card-title>
     <v-card-subtitle class="text-caption text-medium-emphasis mt-1">
-      Cumulative respawns for the most active regiments. Compare regiment performance throughout the battle.
+      Cumulative respawns for all regiments. Top 5 most active regiments are pre-selected. Click legend to toggle visibility.
     </v-card-subtitle>
     <v-card-text>
       <v-chart :option="chartOption" autoresize style="height: 400px" />
@@ -38,7 +38,11 @@ use([
 
 const logStore = useLogStore()
 
-const colors = ['#1976D2', '#4CAF50', '#FF9800', '#E91E63', '#9C27B0']
+const colors = [
+  '#1976D2', '#4CAF50', '#FF9800', '#E91E63', '#9C27B0',
+  '#00BCD4', '#FFEB3B', '#795548', '#607D8B', '#F44336',
+  '#3F51B5', '#8BC34A', '#FFC107', '#673AB7', '#009688'
+]
 
 const chartOption = computed(() => {
   const regimentTimeline = logStore.regimentTimeline
@@ -90,7 +94,9 @@ const chartOption = computed(() => {
       smooth: true,
       itemStyle: {
         color: colors[index % colors.length]
-      }
+      },
+      // Only show top 5 by default
+      selected: regiment.isTop5
     }
   })
 
@@ -103,7 +109,18 @@ const chartOption = computed(() => {
     },
     legend: {
       data: regimentTimeline.map(r => r.regiment),
-      bottom: 0
+      bottom: 0,
+      type: 'scroll',
+      textStyle: {
+        color: '#E0E0E0' // Light gray text for better contrast
+      },
+      pageTextStyle: {
+        color: '#E0E0E0'
+      },
+      selected: regimentTimeline.reduce((acc, r) => {
+        acc[r.regiment] = r.isTop5
+        return acc
+      }, {})
     },
     grid: {
       left: '3%',

@@ -131,26 +131,28 @@ export const useLogStore = defineStore('log', {
     regimentTimeline() {
       const toProcess = this.filteredEvents
 
-      // Get top 5 regiments
+      // Get all regiments sorted by respawn count
       const regimentCounts = {}
       toProcess.forEach(event => {
         regimentCounts[event.regiment] = (regimentCounts[event.regiment] || 0) + 1
       })
 
-      const topRegiments = Object.entries(regimentCounts)
+      const sortedRegiments = Object.entries(regimentCounts)
         .sort((a, b) => b[1] - a[1])
-        .slice(0, 5)
-        .map(([regiment]) => regiment)
 
-      // Build timeline for each regiment
-      return topRegiments.map(regiment => {
+      // Mark top 5 regiments
+      const top5Regiments = sortedRegiments.slice(0, 5).map(([regiment]) => regiment)
+
+      // Build timeline for all regiments
+      return sortedRegiments.map(([regiment], index) => {
         const regimentEvents = toProcess
           .filter(e => e.regiment === regiment)
           .sort((a, b) => a.time - b.time)
 
         return {
           regiment,
-          data: regimentEvents.map(e => ({ time: e.time, count: 1 }))
+          data: regimentEvents.map(e => ({ time: e.time, count: 1 })),
+          isTop5: top5Regiments.includes(regiment)
         }
       })
     },
