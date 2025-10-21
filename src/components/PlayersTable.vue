@@ -14,12 +14,24 @@
           :key="regiment.name"
         >
           <v-expansion-panel-title>
-            <div class="d-flex align-center justify-space-between w-100">
-              <span class="font-weight-bold">{{ regiment.name }}</span>
-              <v-chip size="small" color="primary" class="mr-4">
-                {{ regiment.players.length }} players, {{ regiment.totalRespawns }} respawns
-              </v-chip>
-            </div>
+            <template v-slot:default="{ expanded }">
+              <div class="d-flex align-center justify-space-between w-100">
+                <span class="font-weight-bold">{{ regiment.name }}</span>
+                <div class="d-flex align-center gap-2">
+                  <v-chip size="small" color="primary">
+                    {{ regiment.players.length }} players, {{ regiment.totalRespawns }} respawns
+                  </v-chip>
+                  <v-btn
+                    icon="mdi-content-copy"
+                    size="small"
+                    variant="text"
+                    @click.stop="copyRegimentToClipboard(regiment)"
+                    :title="`Copy ${regiment.name} players to clipboard`"
+                  >
+                  </v-btn>
+                </div>
+              </div>
+            </template>
           </v-expansion-panel-title>
           <v-expansion-panel-text>
             <v-table density="compact">
@@ -47,14 +59,27 @@
         </v-expansion-panel>
       </v-expansion-panels>
     </v-card-text>
+
+    <!-- Success snackbar -->
+    <v-snackbar
+      v-model="showCopySnackbar"
+      :timeout="2000"
+      color="success"
+      location="bottom"
+    >
+      <v-icon class="mr-2">mdi-check-circle</v-icon>
+      {{ copyMessage }}
+    </v-snackbar>
   </v-card>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useLogStore } from '../stores/logStore'
 
 const logStore = useLogStore()
+const showCopySnackbar = ref(false)
+const copyMessage = ref('')
 
 const regimentGroups = computed(() => {
   const groups = {}
@@ -103,5 +128,26 @@ const getPresenceColor = (percentage) => {
   if (percentage >= 80) return 'success'
   if (percentage >= 50) return 'warning'
   return 'error'
+}
+
+const copyRegimentToClipboard = async (regiment) => {
+  try {
+    // Create TSV format: Player\tRespawns\tPresence Time\tPresence %
+    const header = 'Player\tRespawns\tPresence Time\tPresence %'
+    const rows = regiment.players.map(player => 
+      `${player.name}\t${player.respawns}\t${player.presenceTime}\t${player.presencePercentage}%`
+    )
+    const tsv = [header, ...rows].join('\n')
+    
+    await navigator.clipboard.writeText(tsv)
+    
+    // Show success feedback
+    copyMessage.value = `Copied ${regiment.players.length} players from ${regiment.name}`
+    showCopySnackbar.value = true
+  } catch (err) {
+    console.error('Failed to copy to clipboard:', err)
+    copyMessage.value = 'Failed to copy to clipboard'
+    showCopySnackbar.value = true
+  }
 }
 </script>
