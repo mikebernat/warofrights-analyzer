@@ -23,9 +23,36 @@
       "normalize": "extractTKO"
     },
     {
+      "name": "JD Clan with Wrapper",
+      "pattern": "^JD\\s*-?\\s*[\\[\\{\\(]",
+      "description": "Extracts JD clan when followed by optional dash and wrapper (e.g., JD[38Va], JD-[38th Va], JD{JD-CAV})",
+      "extractGroup": 0,
+      "normalize": "extractJD"
+    },
+    {
+      "name": "CB Clan with Parens",
+      "pattern": "^CB\\s*\\(",
+      "description": "Extracts CB clan when followed by parentheses (e.g., CB(8thOh))",
+      "extractGroup": 0,
+      "normalize": "extractCB"
+    },
+    {
+      "name": "CB Underscore Prefix",
+      "pattern": "^CB_",
+      "description": "Extracts CB from underscore format (e.g., CB_8ThOhio_Pv2_Sword)",
+      "extractGroup": 0,
+      "normalize": "extractCB"
+    },
+    {
+      "name": "Prefix Before Any Wrapper",
+      "pattern": "^([A-Za-z]{3,4})[\\[\\{\\(][^\\]\\}\\)]+[\\]\\}\\)]",
+      "description": "Extracts prefix before any wrapper (3-4 letters, no space/dash between)",
+      "extractGroup": 1
+    },
+    {
       "name": "Brackets with Spaces in Regiment (Case Insensitive)",
-      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\]",
-      "description": "Extracts regiment from brackets with optional spaces (e.g., [65th IL], [7TH AR]) - case insensitive",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?\\s+[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\]",
+      "description": "Extracts regiment from brackets with spaces (requires space) - case insensitive",
       "extractGroup": 1,
       "normalize": "removeSpaces"
     },
@@ -44,10 +71,16 @@
       "normalize": "removeSpaces"
     },
     {
+      "name": "Parentheses with Company Suffix",
+      "pattern": "\\(([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\.[A-Z]+\\)",
+      "description": "Extracts regiment from parentheses with company suffix (e.g., (6thAR.WA))",
+      "extractGroup": 1
+    },
+    {
       "name": "Brackets with Dash in Regiment (Case Insensitive)",
-      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?)-([A-Za-z]{2,4})\\]",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?-[A-Za-z]{2,4})\\]",
       "description": "Extracts regiment from brackets with dash (e.g., [65th-IL]) - case insensitive",
-      "extractGroup": 0,
+      "extractGroup": 1,
       "normalize": "removeDash"
     },
     {
@@ -69,9 +102,15 @@
       "extractGroup": 1
     },
     {
-      "name": "Prefix Before Any Wrapper",
-      "pattern": "^([A-Za-z]{2,4})\\s*-?\\s*[\\[\\{\\(][^\\]\\}\\)]+[\\]\\}\\)]",
-      "description": "Extracts prefix before any wrapper (brackets, braces, parens) with optional spaces, case-insensitive",
+      "name": "Brackets with Company in Parens",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\s*\\([A-Z]+\\)\\]",
+      "description": "Extracts regiment from brackets with company in parens (e.g., [59thNY (B)], [59NY(WB)])",
+      "extractGroup": 1
+    },
+    {
+      "name": "Brackets with Dot Space Company",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\.\\s+[A-Z]+\\]",
+      "description": "Extracts regiment from brackets with dot space company (e.g., [7thTX. H])",
       "extractGroup": 1
     },
     {
@@ -103,6 +142,20 @@
       "pattern": "^([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})\\[[A-Z]+\\]",
       "description": "Extracts regiment before company letter in brackets (e.g., 5thFLA[A])",
       "extractGroup": 1
+    },
+    {
+      "name": "Brackets with Trailing Dot After State",
+      "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?\\s+[A-Z]{2,4})\\.\\]",
+      "description": "Extracts regiment from brackets with trailing dot after state (e.g., [51st AL.])",
+      "extractGroup": 1,
+      "normalize": "removeSpaces"
+    },
+    {
+      "name": "Brackets at Start with Company and Trailing Dot",
+      "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?\\s*[A-Z]{2,4})\\.[A-Z]+\\.\\]",
+      "description": "Extracts regiment from brackets with company suffix and trailing dot (e.g., [12thVA.A.])",
+      "extractGroup": 1,
+      "normalize": "removeSpaces"
     },
     {
       "name": "Brackets at Start with Company",
@@ -159,9 +212,10 @@
     },
     {
       "name": "Underscore Delimiter",
-      "pattern": "^([A-Z]+)_([0-9]+(?:st|nd|rd|th)?[A-Z]+)",
+      "pattern": "^([A-Z]+)_([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})",
       "description": "Extracts regiment from underscore format (e.g., CB_8ThOhio)",
-      "extractGroup": 2
+      "extractGroup": 2,
+      "normalize": "truncateState"
     },
     {
       "name": "Clan Prefix with Dash",
@@ -235,7 +289,8 @@
     "removeSpaces": "Remove all spaces from extracted regiment name",
     "removeDash": "Remove dashes and normalize to single word",
     "uppercase": "Convert to uppercase for consistency",
-    "cleanCompanySuffix": "Remove company suffixes like .CAV, .Cav, (LB), {A}, {D}, etc."
+    "cleanCompanySuffix": "Remove company suffixes like .CAV, .Cav, (LB), {A}, {D}, etc.",
+    "truncateState": "Truncate state abbreviations longer than 2 letters (e.g., OHIO -> OH, TEXAS -> TX)"
   },
   "companySuffixPatterns": [
     "\\.CAV$",

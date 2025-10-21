@@ -4,71 +4,12 @@
  */
 
 import { describe, it, expect } from 'vitest'
+import parsingConfig from '../src/config/parsing-config.json'
 
 // Mock the LogParser class from the worker
 class LogParser {
   constructor() {
-    this.config = {
-      regimentPatterns: [
-        // CB Clan prefix patterns (highest priority)
-        {
-          name: "CB Clan with Brackets",
-          pattern: "^CB\\s*[\\[\\{]([^\\]\\}]+)[\\]\\}]",
-          description: "Extracts CB clan when followed by brackets/braces (e.g., CB[30thOH], CB{30thOH})",
-          extractGroup: 0 // Return full match to get "CB"
-        },
-        {
-          name: "CB Clan with Space and Wrapper",
-          pattern: "^CB\\s+[\\[\\{]",
-          description: "Matches CB followed by space and wrapper (e.g., CB [30thOH], CB {30thOH})",
-          extractGroup: 0
-        },
-        // Brackets with Spaces
-        {
-          name: "Brackets with Spaces in Regiment (Case Insensitive)",
-          pattern: "\\[([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\]",
-          description: "Extracts regiment from brackets with optional spaces",
-          extractGroup: 1,
-          normalize: "removeSpaces"
-        },
-        // Braces with Spaces
-        {
-          name: "Braces with Spaces in Regiment (Case Insensitive)",
-          pattern: "\\{([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\}",
-          description: "Extracts regiment from braces with optional spaces",
-          extractGroup: 1,
-          normalize: "removeSpaces"
-        },
-        // Prefix Before Any Wrapper
-        {
-          name: "Prefix Before Any Wrapper",
-          pattern: "^([A-Za-z]{2,4})\\s*-?\\s*[\\[\\{\\(][^\\]\\}\\)]+[\\]\\}\\)]",
-          description: "Extracts prefix before any wrapper",
-          extractGroup: 1
-        },
-        // Square Brackets (Generic)
-        {
-          name: "Square Brackets (Generic)",
-          pattern: "\\[([^\\]]+)\\]",
-          description: "Extracts leftmost [] token",
-          normalize: "cleanCompanySuffix"
-        },
-        // Curly Braces (Generic)
-        {
-          name: "Curly Braces (Generic)",
-          pattern: "\\{([^}]+)\\}",
-          description: "Extracts leftmost {} token",
-          normalize: "cleanCompanySuffix"
-        },
-        // Underscore Delimiter
-        {
-          name: "Underscore Delimiter",
-          pattern: "^([A-Z]+)_([0-9]+(?:st|nd|rd|th)?[A-Z]+)",
-          description: "Extracts regiment from underscore format (e.g., CB_8ThOhio)",
-          extractGroup: 2
-        }
-      ]
-    }
+    this.config = parsingConfig
   }
 
   extractRegiment(playerName) {
@@ -79,9 +20,15 @@ class LogParser {
         const extractGroup = pattern.extractGroup || 1
         let regiment = match[extractGroup]?.trim() || match[1]?.trim()
         
-        // For CB patterns, extract just "CB"
-        if (pattern.name.startsWith("CB Clan")) {
-          regiment = "CB"
+        // Special handling for clan extraction patterns
+        if (pattern.normalize === 'extractCB') {
+          regiment = 'CB'
+        } else if (pattern.normalize === 'extractCQB') {
+          regiment = 'CQB'
+        } else if (pattern.normalize === 'extractTKO') {
+          regiment = 'TKO'
+        } else if (pattern.normalize === 'extractJD') {
+          regiment = 'JD'
         }
         
         // Normalize regiment name
@@ -123,10 +70,20 @@ class LogParser {
       regiment = regiment.replace(/\.CAV$/i, '')
       regiment = regiment.replace(/\.Cav$/i, '')
       regiment = regiment.replace(/\.WA$/i, '')
+      regiment = regiment.replace(/\.\(LB\)$/i, '')
       regiment = regiment.replace(/\(LB\)$/i, '')
       regiment = regiment.replace(/\{[A-Z]\}$/i, '')
+      regiment = regiment.replace(/\{[A-Z]{2}\}$/i, '')
       regiment = regiment.replace(/\[[A-Z]\]$/i, '')
       regiment = regiment.replace(/\.[A-Z]{1,3}$/i, '')
+    }
+    
+    if (normalizeType === 'truncateState') {
+      // Truncate state abbreviations longer than 2 letters
+      // Match pattern like "8ThOhio" and convert to "8thOH"
+      regiment = regiment.replace(/(\d+(?:st|nd|rd|th)?)([A-Z][a-z]{2,})/i, (match, num, state) => {
+        return num + state.substring(0, 2).toUpperCase()
+      })
     }
     
     // Normalize spacing (remove all spaces)
@@ -167,7 +124,7 @@ describe('Regiment Parser', () => {
       expect(parser.extractRegiment('CB {30thOH} Merc. Minty')).toBe('CB')
     })
 
-    it('should extract CB from CB_8ThOhio_Pv2_Sword', () => {
+    it('should extract CB from CB_8ThOhio_Pv2_Sword (underscore format)', () => {
       expect(parser.extractRegiment('CB_8ThOhio_Pv2_Sword')).toBe('CB')
     })
 
@@ -181,6 +138,10 @@ describe('Regiment Parser', () => {
 
     it('should extract CB from CB {30th OH} Pvt.DJ [S]', () => {
       expect(parser.extractRegiment('CB {30th OH} Pvt.DJ [S]')).toBe('CB')
+    })
+
+    it('should extract CB from CB(8thOh)Cpl. Shagsby', () => {
+      expect(parser.extractRegiment('CB(8thOh)Cpl. Shagsby')).toBe('CB')
     })
   })
 
@@ -243,6 +204,108 @@ describe('Regiment Parser', () => {
 
     it('should remove {A} suffix', () => {
       expect(parser.extractRegiment('[8thCT{A}]Pfc. Puncakian')).toBe('8thCT')
+    })
+  })
+
+  describe('JD Clan Format', () => {
+    it('should extract JD from JD[38Va]SgtMaj.TacticalPotato', () => {
+      expect(parser.extractRegiment('JD[38Va]SgtMaj.TacticalPotato')).toBe('JD')
+    })
+
+    it('should extract JD from JD-[38th Va]Cpt.Frostyspace2', () => {
+      expect(parser.extractRegiment('JD-[38th Va]Cpt.Frostyspace2')).toBe('JD')
+    })
+
+    it('should extract JD from JD{JD-CAV}ExaltedCyclopsMantis', () => {
+      expect(parser.extractRegiment('JD{JD-CAV}ExaltedCyclopsMantis')).toBe('JD')
+    })
+
+    it('should extract JD from JD[JD-Cav]QMSgt.T1GERKiNG87', () => {
+      expect(parser.extractRegiment('JD[JD-Cav]QMSgt.T1GERKiNG87')).toBe('JD')
+    })
+
+    it('should extract JD from JD[JD-Cav]1stSgt.Spooky Ghost', () => {
+      expect(parser.extractRegiment('JD[JD-Cav]1stSgt.Spooky Ghost')).toBe('JD')
+    })
+
+    it('should extract JD from JD-[38th VA] 2ndLt. Flandre', () => {
+      expect(parser.extractRegiment('JD-[38th VA] 2ndLt. Flandre')).toBe('JD')
+    })
+
+    it('should extract JD from JD[2nd Ga-INF]LCpl.Deko', () => {
+      expect(parser.extractRegiment('JD[2nd Ga-INF]LCpl.Deko')).toBe('JD')
+    })
+  })
+
+  describe('Debug Report Cases - Oct 2025', () => {
+    it('should extract 12th from [12th]TheThrongler', () => {
+      expect(parser.extractRegiment('[12th]TheThrongler')).toBe('12th')
+    })
+
+    it('should extract 59NY from [59NY(WB)] Pvt. OShronk', () => {
+      expect(parser.extractRegiment('[59NY(WB)] Pvt. OShronk')).toBe('59NY')
+    })
+
+    it('should extract CB from CB_8ThOhio_Pv2_Sword (clan extraction)', () => {
+      expect(parser.extractRegiment('CB_8ThOhio_Pv2_Sword')).toBe('CB')
+    })
+
+    it('should extract 59thNY from [59thNY (B)] Pvt. Nurt', () => {
+      expect(parser.extractRegiment('[59thNY (B)] Pvt. Nurt')).toBe('59thNY')
+    })
+
+    it('should extract 7thTX from [7thTX. H]Vol. Cole McLean', () => {
+      expect(parser.extractRegiment('[7thTX. H]Vol. Cole McLean')).toBe('7thTX')
+    })
+
+    it('should extract AVC from AVC[9thAL Cav] 2ndLt. Tater', () => {
+      expect(parser.extractRegiment('AVC[9thAL Cav] 2ndLt. Tater')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC[8thAL]Snr.Pvt. Ghost Delta', () => {
+      expect(parser.extractRegiment('AVC[8thAL]Snr.Pvt. Ghost Delta')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC[8thAL] Pvt. MarsTheDoomer', () => {
+      expect(parser.extractRegiment('AVC[8thAL] Pvt. MarsTheDoomer')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC(8thAL)Pvt.Zack', () => {
+      expect(parser.extractRegiment('AVC(8thAL)Pvt.Zack')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC[8thAL.I]Cpl.MNnative187', () => {
+      expect(parser.extractRegiment('AVC[8thAL.I]Cpl.MNnative187')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC[9thCav] Rct. Tez', () => {
+      expect(parser.extractRegiment('AVC[9thCav] Rct. Tez')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC[8thAL] Pvt. IlustriusWeiner', () => {
+      expect(parser.extractRegiment('AVC[8thAL] Pvt. IlustriusWeiner')).toBe('AVC')
+    })
+
+    it('should extract AVC from AVC[8thAL]DrumMaj.Bootystyx', () => {
+      expect(parser.extractRegiment('AVC[8thAL]DrumMaj.Bootystyx')).toBe('AVC')
+    })
+  })
+
+  describe('Debug Report Cases - Oct 21, 2025', () => {
+    it('should extract 12thVA from [12thVA.A.] Cpl. Kettle', () => {
+      expect(parser.extractRegiment('[12thVA.A.] Cpl. Kettle')).toBe('12thVA')
+    })
+
+    it('should extract 51stAL from [51st AL.] Cpl. Jimmy', () => {
+      expect(parser.extractRegiment('[51st AL.] Cpl. Jimmy')).toBe('51stAL')
+    })
+
+    it('should extract TKO from TKO-[CB]Cpl. Goolock', () => {
+      expect(parser.extractRegiment('TKO-[CB]Cpl. Goolock')).toBe('TKO')
+    })
+
+    it('should extract TKO from TKO-[CB]Cpl. Rukian', () => {
+      expect(parser.extractRegiment('TKO-[CB]Cpl. Rukian')).toBe('TKO')
     })
   })
 })

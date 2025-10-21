@@ -24,11 +24,13 @@ class LogParser {
           regiment = 'CQB'
         } else if (pattern.normalize === 'extractTKO') {
           regiment = 'TKO'
+        } else if (pattern.normalize === 'extractJD') {
+          regiment = 'JD'
         }
         
         // Normalize regiment name
         if (regiment) {
-          regiment = this.normalizeRegiment(regiment)
+          regiment = this.normalizeRegiment(regiment, pattern.normalize)
         }
         
         return regiment
@@ -40,7 +42,7 @@ class LogParser {
   /**
    * Normalize regiment name by removing company designators and special characters
    */
-  normalizeRegiment(regiment) {
+  normalizeRegiment(regiment, normalizeType) {
     // Remove trailing company letters with optional dots (e.g., ".C", ".I", ".G")
     regiment = regiment.replace(/\.[A-Z](\*)?$/i, '')
     
@@ -49,6 +51,36 @@ class LogParser {
     
     // Remove standalone company letters at the end (e.g., "10thUS C" -> "10thUS")
     regiment = regiment.replace(/\s+[A-Z](\*)?$/i, '')
+    
+    // Apply specific normalization based on pattern
+    if (normalizeType === 'removeSpaces') {
+      regiment = regiment.replace(/\s+/g, '')
+    }
+    
+    if (normalizeType === 'removeDash') {
+      regiment = regiment.replace(/-/g, '')
+    }
+    
+    if (normalizeType === 'cleanCompanySuffix') {
+      // Remove company suffixes
+      regiment = regiment.replace(/\.CAV$/i, '')
+      regiment = regiment.replace(/\.Cav$/i, '')
+      regiment = regiment.replace(/\.WA$/i, '')
+      regiment = regiment.replace(/\.\(LB\)$/i, '')
+      regiment = regiment.replace(/\(LB\)$/i, '')
+      regiment = regiment.replace(/\{[A-Z]\}$/i, '')
+      regiment = regiment.replace(/\{[A-Z]{2}\}$/i, '')
+      regiment = regiment.replace(/\[[A-Z]\]$/i, '')
+      regiment = regiment.replace(/\.[A-Z]{1,3}$/i, '')
+    }
+    
+    if (normalizeType === 'truncateState') {
+      // Truncate state abbreviations longer than 2 letters
+      // Match pattern like "8ThOhio" and convert to "8thOH"
+      regiment = regiment.replace(/(\d+(?:st|nd|rd|th)?)([A-Z][a-z]{2,})/i, (match, num, state) => {
+        return num + state.substring(0, 2).toUpperCase()
+      })
+    }
     
     // Normalize spacing (remove all spaces)
     regiment = regiment.replace(/\s+/g, '')
