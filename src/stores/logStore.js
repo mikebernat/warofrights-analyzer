@@ -313,13 +313,72 @@ export const useLogStore = defineStore('log', {
     },
 
     exportCSV() {
-      const headers = ['Time', 'Player', 'Regiment', 'RoundId', 'Map']
-      const rows = this.events.map(event => [
+      // Combine respawn events and player session events
+      const allEvents = []
+      
+      // Add respawn events
+      this.events.forEach(event => {
+        allEvents.push({
+          time: event.time,
+          player: event.player,
+          regiment: event.regiment,
+          roundId: event.roundId,
+          map: event.map,
+          event: 'respawn'
+        })
+      })
+      
+      // Add player session events (joins/leaves)
+      if (this.playerSessions) {
+        this.playerSessions.forEach(session => {
+          // Try to find regiment from respawn events for this player
+          const playerRespawn = this.events.find(e => e.player === session.player)
+          const regiment = playerRespawn ? playerRespawn.regiment : 'Unknown'
+          const round = this.rounds.find(r => r.id === session.roundId)
+          allEvents.push({
+            time: session.time,
+            player: session.player,
+            regiment: regiment,
+            roundId: session.roundId || 'N/A',
+            map: round ? round.map : 'Unknown',
+            event: session.action === 'join' ? 'joined' : 'disconnected'
+          })
+        })
+      }
+      
+      // Sort by time
+      allEvents.sort((a, b) => a.time - b.time)
+      
+      // Filter by selected round
+      let filteredEvents = allEvents
+      if (this.selectedRoundId !== null) {
+        filteredEvents = allEvents.filter(event => event.roundId === this.selectedRoundId)
+      }
+      
+      // Filter by time range
+      const [startTime, endTime] = this.timeRange
+      filteredEvents = filteredEvents.filter(event => 
+        event.time >= startTime && event.time <= endTime
+      )
+      
+      // Filter by search term
+      if (this.searchTerm) {
+        const searchLower = this.searchTerm.toLowerCase()
+        filteredEvents = filteredEvents.filter(event =>
+          event.player.toLowerCase().includes(searchLower) ||
+          event.regiment.toLowerCase().includes(searchLower)
+        )
+      }
+      
+      // Create CSV
+      const headers = ['Time', 'Player', 'Regiment', 'RoundID', 'Map', 'Event']
+      const rows = filteredEvents.map(event => [
         this.formatTime(event.time),
         event.player,
         event.regiment,
         event.roundId,
-        event.map
+        event.map,
+        event.event
       ])
 
       const csv = [
@@ -331,7 +390,15 @@ export const useLogStore = defineStore('log', {
       const url = URL.createObjectURL(blob)
       const a = document.createElement('a')
       a.href = url
-      a.download = `wor-log-export-${Date.now()}.csv`
+      
+      // Include round and filter info in filename
+      let filename = 'wor-log-export'
+      if (this.selectedRoundId !== null) {
+        filename += `-round${this.selectedRoundId}`
+      }
+      filename += `-${Date.now()}.csv`
+      
+      a.download = filename
       a.click()
       URL.revokeObjectURL(url)
     },

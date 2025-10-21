@@ -122,18 +122,6 @@
               <FilterInput />
             </v-col>
           </v-row>
-          <v-row class="mt-2">
-            <v-col>
-              <v-btn
-                color="success"
-                variant="outlined"
-                prepend-icon="mdi-download"
-                @click="logStore.exportCSV()"
-              >
-                Export CSV
-              </v-btn>
-            </v-col>
-          </v-row>
         </v-card-text>
       </v-card>
 

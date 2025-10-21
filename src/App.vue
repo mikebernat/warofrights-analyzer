@@ -11,6 +11,15 @@
         {{ logStore.fileName }}
       </v-chip>
       <v-btn
+        v-if="logStore.fileName && logStore.selectedRoundId !== null && !isShareView"
+        @click="logStore.exportCSV()"
+        color="white"
+        variant="text"
+        prepend-icon="mdi-download"
+      >
+        Export CSV
+      </v-btn>
+      <v-btn
         v-if="logStore.fileName && !isShareView"
         :disabled="logStore.selectedRoundId === null"
         @click="showShareModal = true"
