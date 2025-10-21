@@ -63,6 +63,11 @@ class LogParser {
       regiment = regiment.replace(/-/g, '')
     }
     
+    if (normalizeType === 'removeDotSuffix') {
+      // Remove dot and everything after it (e.g., 1stSC.OR -> 1stSC)
+      regiment = regiment.replace(/\..+$/, '')
+    }
+    
     if (normalizeType === 'cleanCompanySuffix') {
       // Remove company suffixes
       regiment = regiment.replace(/\.CAV$/i, '')

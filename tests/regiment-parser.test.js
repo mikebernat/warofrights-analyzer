@@ -63,6 +63,11 @@ class LogParser {
       regiment = regiment.replace(/-/g, '')
     }
     
+    if (normalizeType === 'removeDotSuffix') {
+      // Remove dot and everything after it (e.g., 1stSC.OR -> 1stSC)
+      regiment = regiment.replace(/\..+$/, '')
+    }
+    
     if (normalizeType === 'uppercase') {
       regiment = regiment.toUpperCase()
     }
@@ -342,6 +347,18 @@ describe('Regiment Parser', () => {
 
     it('should extract TKO from TKO-[CB]Cpl. Rukian', () => {
       expect(parser.extractRegiment('TKO-[CB]Cpl. Rukian')).toBe('TKO')
+    })
+
+    it('should extract 1stLAB from |1stLAB|Cpl.HecticYeung', () => {
+      expect(parser.extractRegiment('|1stLAB|Cpl.HecticYeung')).toBe('1stLAB')
+    })
+
+    it('should extract 1stSC from |1stSC.OR|A|2ndLt.TuMadre', () => {
+      expect(parser.extractRegiment('|1stSC.OR|A|2ndLt.TuMadre')).toBe('1stSC')
+    })
+
+    it('should extract 6thAR from {6TH AR. WA} Pvt. Nipple', () => {
+      expect(parser.extractRegiment('{6TH AR. WA} Pvt. Nipple')).toBe('6thAR')
     })
   })
 })

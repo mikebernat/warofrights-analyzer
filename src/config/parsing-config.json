@@ -64,6 +64,13 @@
       "normalize": "removeSpaces"
     },
     {
+      "name": "Braces with Dot Space Company",
+      "pattern": "\\{([0-9]+(?:st|nd|rd|th)?\\s+[A-Z]{2,4})\\.\\s+[A-Z]+\\}",
+      "description": "Extracts regiment from braces with dot space company (e.g., {6TH AR. WA})",
+      "extractGroup": 1,
+      "normalize": "removeSpaces"
+    },
+    {
       "name": "Braces with Spaces in Regiment (Case Insensitive)",
       "pattern": "\\{([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\}",
       "description": "Extracts regiment from braces with optional spaces (e.g., {65th IL}, {6thAR WA}) - case insensitive",
@@ -211,6 +218,13 @@
       "pattern": "\\{([^}]+)\\}",
       "description": "Extracts leftmost {} token",
       "normalize": "cleanCompanySuffix"
+    },
+    {
+      "name": "Pipe Delimiter at Start",
+      "pattern": "^\\|([^|]+)\\|",
+      "description": "Extracts regiment between pipes at start (e.g., |1stLAB|, |1stSC.OR|)",
+      "extractGroup": 1,
+      "normalize": "removeDotSuffix"
     },
     {
       "name": "Pipe Delimiter",
