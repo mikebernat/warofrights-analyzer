@@ -2,6 +2,13 @@
   "idleGapSeconds": 300,
   "regimentPatterns": [
     {
+      "name": "CB Clan with Brackets",
+      "pattern": "^CB\\s*[\\[\\{]",
+      "description": "Extracts CB clan when followed by brackets/braces (e.g., CB[30thOH], CB{30thOH}, CB [30thOH])",
+      "extractGroup": 0,
+      "normalize": "extractCB"
+    },
+    {
       "name": "Brackets with Spaces in Regiment (Case Insensitive)",
       "pattern": "\\[([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\]",
       "description": "Extracts regiment from brackets with optional spaces (e.g., [65th IL], [7TH AR]) - case insensitive",

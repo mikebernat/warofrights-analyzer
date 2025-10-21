@@ -11,11 +11,16 @@ class LogParser {
    */
   extractRegiment(playerName) {
     for (const pattern of this.config.regimentPatterns) {
-      const regex = new RegExp(pattern.pattern)
+      const regex = new RegExp(pattern.pattern, 'i') // Case insensitive
       const match = playerName.match(regex)
       if (match) {
         const extractGroup = pattern.extractGroup || 1
         let regiment = match[extractGroup]?.trim() || match[1]?.trim()
+        
+        // Special handling for CB clan pattern
+        if (pattern.normalize === 'extractCB') {
+          regiment = 'CB'
+        }
         
         // Normalize regiment name
         if (regiment) {
