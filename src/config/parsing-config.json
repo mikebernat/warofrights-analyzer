@@ -9,6 +9,20 @@
       "normalize": "extractCB"
     },
     {
+      "name": "CQB Clan with Wrapper",
+      "pattern": "^CQB\\s*[\\[\\{\\(]",
+      "description": "Extracts CQB clan when followed by brackets/braces/parens (e.g., CQB[11thTX], CQB(11TX), CQB [11thTX])",
+      "extractGroup": 0,
+      "normalize": "extractCQB"
+    },
+    {
+      "name": "TKO Clan with Wrapper",
+      "pattern": "^TKO\\s*-?\\s*[\\[\\{\\(]",
+      "description": "Extracts TKO clan when followed by dash and wrapper (e.g., TKO-[3rdKY], TKO-{3rdKY})",
+      "extractGroup": 0,
+      "normalize": "extractTKO"
+    },
+    {
       "name": "Brackets with Spaces in Regiment (Case Insensitive)",
       "pattern": "\\[([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\]",
       "description": "Extracts regiment from brackets with optional spaces (e.g., [65th IL], [7TH AR]) - case insensitive",
@@ -46,6 +60,12 @@
       "name": "Bracket Missing Close with Company",
       "pattern": "^\\[([0-9]+(?:st|nd|rd|th)?)[\\(]",
       "description": "Extracts regiment from bracket missing close bracket (e.g., [59th(A))",
+      "extractGroup": 1
+    },
+    {
+      "name": "Bracket with Company Suffix Multiple Dots",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?[A-Z]{2,4})(?:\\.[A-Z]+)+\\]",
+      "description": "Extracts regiment from brackets with multiple dot suffixes (e.g., [12thVA.E.BB])",
       "extractGroup": 1
     },
     {

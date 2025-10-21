@@ -17,9 +17,13 @@ class LogParser {
         const extractGroup = pattern.extractGroup || 1
         let regiment = match[extractGroup]?.trim() || match[1]?.trim()
         
-        // Special handling for CB clan pattern
+        // Special handling for clan extraction patterns
         if (pattern.normalize === 'extractCB') {
           regiment = 'CB'
+        } else if (pattern.normalize === 'extractCQB') {
+          regiment = 'CQB'
+        } else if (pattern.normalize === 'extractTKO') {
+          regiment = 'TKO'
         }
         
         // Normalize regiment name
