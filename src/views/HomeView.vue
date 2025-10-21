@@ -57,8 +57,11 @@
           <v-icon class="mr-2">mdi-numeric-3-circle</v-icon>
           Step 3: Update Assignments (Optional)
         </v-card-title>
+        <v-card-subtitle class="pt-2">
+          Assign players to regiments and regiments to teams to improve analysis accuracy.
+        </v-card-subtitle>
         <v-card-text>
-          <v-expansion-panels>
+          <v-expansion-panels multiple>
             <v-expansion-panel>
               <v-expansion-panel-title>
                 <div class="d-flex align-center w-100">
