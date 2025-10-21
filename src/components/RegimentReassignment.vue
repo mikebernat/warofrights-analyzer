@@ -136,7 +136,7 @@ import { useLogStore } from '../stores/logStore'
 const logStore = useLogStore()
 
 const searchPlayer = ref('')
-const filterRegiment = ref('Uncategorized')
+const filterRegiment = ref(null) // Will be set to "Uncategorized (X players)" dynamically
 const showDebugDialog = ref(false)
 const debugReport = ref('')
 
@@ -197,10 +197,18 @@ const availableRegiments = computed(() => {
     .sort((a, b) => a.value.localeCompare(b.value))
 })
 
-// Regiment filter options (simple list for filter dropdown)
+// Regiment filter options with player counts
 const regimentFilterOptions = computed(() => {
-  const regiments = availableRegiments.value.map(r => r.value)
-  return ['Uncategorized', ...regiments]
+  // Count uncategorized players
+  const uncategorizedPlayers = playerData.value.filter(p => p.currentRegiment === 'Uncategorized').length
+  
+  // Build options array with counts
+  const options = [
+    `Uncategorized (${uncategorizedPlayers} players)`,
+    ...availableRegiments.value.map(r => r.title)
+  ]
+  
+  return options
 })
 
 // Filtered players based on search and filter
@@ -213,7 +221,9 @@ const filteredPlayers = computed(() => {
   }
   
   if (filterRegiment.value) {
-    filtered = filtered.filter(p => p.currentRegiment === filterRegiment.value)
+    // Extract regiment name from "Regiment (X players)" format
+    const regimentName = filterRegiment.value.replace(/\s*\(\d+\s+players?\)$/, '')
+    filtered = filtered.filter(p => p.currentRegiment === regimentName)
   }
   
   return filtered
