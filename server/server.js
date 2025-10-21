@@ -33,8 +33,8 @@ function generateShareId(data) {
   return `${hash}_${timestamp}`
 }
 
-// POST /api/share - Create a new shared analysis
-app.post('/api/share', shareRateLimiter, async (req, res) => {
+// POST /share - Create a new shared analysis
+app.post('/share', shareRateLimiter, async (req, res) => {
   try {
     const { analysis } = req.body
 
@@ -74,8 +74,8 @@ app.post('/api/share', shareRateLimiter, async (req, res) => {
   }
 })
 
-// GET /api/share/:shareId - Retrieve a shared analysis
-app.get('/api/share/:shareId', async (req, res) => {
+// GET /share/:shareId - Retrieve a shared analysis
+app.get('/share/:shareId', async (req, res) => {
   try {
     const { shareId } = req.params
     
@@ -119,7 +119,7 @@ app.get('/api/share/:shareId', async (req, res) => {
 })
 
 // Health check endpoint
-app.get('/api/health', (req, res) => {
+app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
