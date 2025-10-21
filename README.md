@@ -115,7 +115,16 @@ npm start
 0 2 * * * /path/to/server/cron-cleanup.sh
 ```
 
-See `server/README.md` for detailed documentation.
+## Deployment
+
+### Docker (Recommended for Self-Hosting)
+See **[docs/DOCKER_DEPLOYMENT.md](docs/DOCKER_DEPLOYMENT.md)** for complete Docker deployment guide.
+
+### Digital Ocean App Platform
+See **[docs/DIGITALOCEAN_DEPLOYMENT.md](docs/DIGITALOCEAN_DEPLOYMENT.md)** for cloud deployment guide.
+
+### Documentation
+See **[docs/README.md](docs/README.md)** for complete documentation index.
 
 ## Usage
 

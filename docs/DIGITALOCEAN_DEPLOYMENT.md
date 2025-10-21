@@ -8,11 +8,51 @@ The application consists of two components:
 1. **Backend API** (Node.js Express server)
 2. **Frontend** (Vue.js static site)
 
+Both components are deployed together using ingress routing:
+- `/api/*` routes to the backend service
+- `/*` routes to the frontend static site
+- Single domain for both (e.g., `your-app.ondigitalocean.app`)
+
+## Quick Start (15-20 minutes)
+
+### Step 1: Create Storage
+1. Go to **Digital Ocean Spaces** → **Create a Space**
+2. Choose a region (e.g., `nyc3`)
+3. Name your Space (e.g., `wor-analyzer-storage`)
+4. Go to **API** → **Spaces Keys** → **Generate New Key**
+5. **Save immediately**: Access Key ID and Secret Access Key
+6. Note your endpoint: `https://{region}.digitaloceanspaces.com`
+
+### Step 2: Update Configuration
+Edit `.do/app.yaml`:
+- Update `github.repo` with your repository (e.g., `username/repo-name`)
+- Update S3 credentials with your Spaces info
+
+### Step 3: Deploy
+```bash
+# Install doctl
+brew install doctl  # macOS
+# or snap install doctl  # Linux
+
+# Authenticate
+doctl auth init
+
+# Deploy
+doctl apps create --spec .do/app.yaml
+```
+
+### Step 4: Test
+Once deployed, test the health endpoint:
+```bash
+curl https://your-app-url.ondigitalocean.app/api/health
+```
+
 ## Prerequisites
 
 - Digital Ocean account
 - GitHub repository with your code
-- Digital Ocean Spaces bucket (for S3-compatible storage) OR use filesystem storage
+- Digital Ocean Spaces bucket (for S3-compatible storage)
+- 15-20 minutes
 
 ## Environment Variables
 
@@ -171,26 +211,54 @@ If you need to change the API URL after deployment:
 
 ## Troubleshooting
 
+### App Spec Validation Errors
+
+**Error: `services.github.repo` is required**
+- Add `repo: username/repo-name` to both the `api` service and `frontend` static site in `.do/app.yaml`
+
+**Error: rule matching path prefix "/" already in use**
+- Ensure you have the `ingress` section configured with proper routing
+- The `/api` prefix should route to the `api` component
+- The `/` prefix should route to the `frontend` component
+
+### 405 Method Not Allowed (Cannot POST /share)
+
+This occurs when the backend routes don't match the ingress routing:
+- **Problem**: Ingress strips the `/api` prefix before forwarding to backend
+- **Solution**: Backend routes should be `/share`, `/health` (not `/api/share`, `/api/health`)
+- Update `server/server.js` to remove `/api` prefix from all routes
+- Update health check in `.do/app.yaml` to `http_path: /health`
+
+### 404 Not Found on Share Links
+
+This happens when Vue Router routes aren't handled correctly:
+- **Solution**: Add `catchall_document: index.html` to the frontend static site in `.do/app.yaml`
+- This tells Digital Ocean to serve `index.html` for all non-file routes
+- Vue Router will then handle the client-side routing
+
 ### CORS Errors
-- Verify `CORS_ORIGIN` matches your frontend URL exactly
-- Check for trailing slashes
-- Ensure the environment variable is set correctly
+- Verify `CORS_ORIGIN` is set to `${APP_URL}` in `.do/app.yaml`
+- With ingress routing, both frontend and backend are on the same domain (CORS should be automatic)
+- Check browser console for specific CORS error messages
 
 ### API Connection Errors
-- Verify `VITE_API_URL` is set correctly
-- Check that the backend service is running
-- Verify health check is passing
+- Verify `VITE_API_URL` is set to `${APP_URL}` (not `${api.PUBLIC_URL}` when using ingress)
+- Check that the backend service is running in the Digital Ocean dashboard
+- Verify health check is passing: `curl https://your-app.ondigitalocean.app/api/health`
+- Check backend logs for errors
 
 ### Storage Errors (S3/Spaces)
 - Verify bucket name is correct
 - Check access keys have proper permissions
-- Ensure endpoint URL is correct for your region
+- Ensure endpoint URL is correct: `https://{region}.digitaloceanspaces.com` (without bucket name)
+- Add `S3_REGION` environment variable (e.g., `nyc3`)
 - Verify bucket CORS settings if needed
 
 ### Build Failures
 - Check build logs in App Platform dashboard
-- Verify `package.json` dependencies are correct
-- Ensure Node.js version compatibility
+- Verify `package.json` files are correct in both root and `server/` directories
+- Ensure Node.js version compatibility (Node 18+ required)
+- Check that `source_dir: server` is set for the backend service
 
 ## Cost Optimization
 
