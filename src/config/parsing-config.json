@@ -2,6 +2,34 @@
   "idleGapSeconds": 300,
   "regimentPatterns": [
     {
+      "name": "Brackets with Spaces in Regiment (Case Insensitive)",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\]",
+      "description": "Extracts regiment from brackets with optional spaces (e.g., [65th IL], [7TH AR]) - case insensitive",
+      "extractGroup": 1,
+      "normalize": "removeSpaces"
+    },
+    {
+      "name": "Braces with Spaces in Regiment (Case Insensitive)",
+      "pattern": "\\{([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\}",
+      "description": "Extracts regiment from braces with optional spaces (e.g., {65th IL}, {6thAR WA}) - case insensitive",
+      "extractGroup": 1,
+      "normalize": "removeSpaces"
+    },
+    {
+      "name": "Parentheses with Spaces in Regiment (Case Insensitive)",
+      "pattern": "\\(([0-9]+(?:st|nd|rd|th)?\\s*[A-Za-z]{2,4})(?:\\s+[A-Za-z]{2,4})?\\)",
+      "description": "Extracts regiment from parentheses with optional spaces (e.g., (7TH AR)) - case insensitive",
+      "extractGroup": 1,
+      "normalize": "removeSpaces"
+    },
+    {
+      "name": "Brackets with Dash in Regiment (Case Insensitive)",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?)-([A-Za-z]{2,4})\\]",
+      "description": "Extracts regiment from brackets with dash (e.g., [65th-IL]) - case insensitive",
+      "extractGroup": 0,
+      "normalize": "removeDash"
+    },
+    {
       "name": "Clan at Start Before Rank",
       "pattern": "^([A-Z]{2,4})[-\\s]",
       "description": "Extracts clan tag at start followed by dash or space (e.g., II-Brig.Gen, II 6th)",
@@ -79,14 +107,23 @@
       "extractGroup": 1
     },
     {
-      "name": "Square Brackets",
-      "pattern": "\\[([^\\]]+)\\]",
-      "description": "Extracts leftmost [] token"
+      "name": "Square Brackets with Company Suffix",
+      "pattern": "\\[([0-9]+(?:st|nd|rd|th)?[A-Za-z]{2,4})[\\.\\(\\{][A-Za-z]+[\\)\\}\\]]?\\]",
+      "description": "Extracts regiment from brackets, stripping company suffixes like .CAV, .Cav, (LB), {A}",
+      "extractGroup": 1,
+      "normalize": "uppercase"
     },
     {
-      "name": "Curly Braces",
+      "name": "Square Brackets (Generic)",
+      "pattern": "\\[([^\\]]+)\\]",
+      "description": "Extracts leftmost [] token",
+      "normalize": "cleanCompanySuffix"
+    },
+    {
+      "name": "Curly Braces (Generic)",
       "pattern": "\\{([^}]+)\\}",
-      "description": "Extracts leftmost {} token"
+      "description": "Extracts leftmost {} token",
+      "normalize": "cleanCompanySuffix"
     },
     {
       "name": "Pipe Delimiter",
@@ -166,5 +203,21 @@
     "regimentBar": 10,
     "playerBar": 10,
     "regimentTimeline": 5
-  }
+  },
+  "normalizationRules": {
+    "removeSpaces": "Remove all spaces from extracted regiment name",
+    "removeDash": "Remove dashes and normalize to single word",
+    "uppercase": "Convert to uppercase for consistency",
+    "cleanCompanySuffix": "Remove company suffixes like .CAV, .Cav, (LB), {A}, {D}, etc."
+  },
+  "companySuffixPatterns": [
+    "\\.CAV$",
+    "\\.Cav$",
+    "\\.WA$",
+    "\\(LB\\)$",
+    "\\{[A-Z]\\}$",
+    "\\{[A-Z]{2}\\}$",
+    "\\[[A-Z]\\]$",
+    "\\.[A-Z]{1,3}$"
+  ]
 }
