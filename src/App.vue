@@ -29,6 +29,9 @@
       <router-view />
     </v-main>
 
+    <!-- Footer -->
+    <AppFooter />
+
     <!-- Loading Overlay -->
     <v-overlay :model-value="logStore.loading" class="align-center justify-center">
       <v-card width="400">
@@ -52,6 +55,7 @@ import { ref, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useLogStore } from './stores/logStore'
 import ShareModal from './components/ShareModal.vue'
+import AppFooter from './components/AppFooter.vue'
 
 const route = useRoute()
 const logStore = useLogStore()
