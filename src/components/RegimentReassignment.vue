@@ -1,8 +1,47 @@
 <template>
   <div>
       <v-alert type="info" variant="tonal" class="mb-4">
-        Reassign players to correct regiments. Changes apply to all their respawns.
+        Reassign players to correct regiments. Changes apply to all their respawns. Select multiple players for mass updates.
       </v-alert>
+
+      <!-- Mass update controls -->
+      <v-card v-if="selectedPlayers.length > 0" class="mb-4" color="primary" variant="tonal">
+        <v-card-text>
+          <v-row align="center">
+            <v-col cols="12" md="6">
+              <div class="text-subtitle-1 font-weight-bold">
+                <v-icon class="mr-2">mdi-account-multiple</v-icon>
+                {{ selectedPlayers.length }} player(s) selected
+              </div>
+            </v-col>
+            <v-col cols="12" md="4">
+              <v-combobox
+                v-model="massUpdateRegiment"
+                :items="availableRegiments"
+                item-title="title"
+                item-value="value"
+                :return-object="false"
+                label="Assign Regiment"
+                density="compact"
+                variant="outlined"
+                placeholder="Select or type regiment"
+                hide-details
+              ></v-combobox>
+            </v-col>
+            <v-col cols="12" md="2">
+              <v-btn
+                color="primary"
+                block
+                :disabled="!massUpdateRegiment"
+                @click="applyMassUpdate"
+                prepend-icon="mdi-check-all"
+              >
+                Apply
+              </v-btn>
+            </v-col>
+          </v-row>
+        </v-card-text>
+      </v-card>
 
       <!-- Filter controls -->
       <v-row class="mb-4">
@@ -31,10 +70,13 @@
 
       <!-- Players table -->
       <v-data-table
+        v-model="selectedPlayers"
         :headers="headers"
         :items="filteredPlayers"
         :items-per-page="10"
         density="compact"
+        show-select
+        item-value="player"
       >
         <template v-slot:item.player="{ item }">
           <span class="font-weight-medium">{{ item.player }}</span>
@@ -139,6 +181,8 @@ const searchPlayer = ref('')
 const filterRegiment = ref(null) // Will be set to "Uncategorized (X players)" dynamically
 const showDebugDialog = ref(false)
 const debugReport = ref('')
+const selectedPlayers = ref([])
+const massUpdateRegiment = ref(null)
 
 const headers = [
   { title: 'Player', key: 'player', sortable: true },
@@ -250,6 +294,35 @@ const applyChange = (item) => {
     item.newRegiment = null
     item.changed = false
   }
+}
+
+const applyMassUpdate = () => {
+  if (!massUpdateRegiment.value || selectedPlayers.value.length === 0) {
+    return
+  }
+  
+  // Build changes object for all selected players
+  const changes = {}
+  selectedPlayers.value.forEach(playerName => {
+    changes[playerName] = massUpdateRegiment.value
+  })
+  
+  // Apply changes to store
+  logStore.applyRegimentReassignments(changes)
+  
+  // Update UI for all affected players
+  playerData.value.forEach(p => {
+    if (selectedPlayers.value.includes(p.player)) {
+      p.currentRegiment = massUpdateRegiment.value
+      p.originalRegiment = massUpdateRegiment.value
+      p.newRegiment = null
+      p.changed = false
+    }
+  })
+  
+  // Clear selection and mass update field
+  selectedPlayers.value = []
+  massUpdateRegiment.value = null
 }
 
 const resetPlayer = (item) => {
