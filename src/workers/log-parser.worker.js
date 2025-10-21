@@ -79,6 +79,7 @@ class LogParser {
     const lines = logContent.split('\n')
     const events = []
     const warnings = []
+    const playerSessions = [] // Track join/leave events
     
     let initialized = false
     let currentRound = null
@@ -168,6 +169,34 @@ class LogParser {
           currentRound.status = 'Complete'
           const teamId = parseInt(match[1])
           currentRound.winner = teamId === 0 ? 'CSA' : teamId === 1 ? 'USA' : teamId === 2 ? 'USA' : 'Unknown'
+        }
+      }
+
+      // Track player joins
+      if (line.includes('has joined the server')) {
+        const match = line.match(/Player (.+?) has joined the server/)
+        if (match) {
+          const playerName = match[1]
+          playerSessions.push({
+            player: playerName,
+            action: 'join',
+            time: timestamp,
+            roundId: currentRound ? currentRound.id : null
+          })
+        }
+      }
+
+      // Track player leaves
+      if (line.includes('has left the server')) {
+        const match = line.match(/Player (.+?) has left the server/)
+        if (match) {
+          const playerName = match[1]
+          playerSessions.push({
+            player: playerName,
+            action: 'leave',
+            time: timestamp,
+            roundId: currentRound ? currentRound.id : null
+          })
         }
       }
 
@@ -278,6 +307,7 @@ class LogParser {
       events,
       rounds,
       warnings,
+      playerSessions,
       stats: {
         totalRespawns: events.length,
         totalRounds: rounds.length,

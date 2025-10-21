@@ -27,12 +27,19 @@
                 <tr>
                   <th>Player</th>
                   <th class="text-right">Respawns</th>
+                  <th class="text-right">Presence Time</th>
                 </tr>
               </thead>
               <tbody>
                 <tr v-for="player in regiment.players" :key="player.name">
                   <td>{{ player.name }}</td>
                   <td class="text-right">{{ player.respawns }}</td>
+                  <td class="text-right">
+                    <span class="font-weight-medium">{{ player.presenceTime }}</span>
+                    <v-chip size="x-small" :color="getPresenceColor(player.presencePercentage)" class="ml-2">
+                      {{ player.presencePercentage }}%
+                    </v-chip>
+                  </td>
                 </tr>
               </tbody>
             </v-table>
@@ -67,7 +74,17 @@ const regimentGroups = computed(() => {
   return Object.entries(groups)
     .map(([regiment, players]) => {
       const playerList = Object.entries(players)
-        .map(([name, respawns]) => ({ name, respawns }))
+        .map(([name, respawns]) => {
+          // Get presence time for this player
+          const presence = logStore.getPlayerPresenceTime(name, logStore.selectedRoundId)
+          
+          return {
+            name,
+            respawns,
+            presenceTime: presence.formattedTime,
+            presencePercentage: presence.percentage
+          }
+        })
         .sort((a, b) => b.respawns - a.respawns)
       
       const totalRespawns = playerList.reduce((sum, p) => sum + p.respawns, 0)
@@ -81,4 +98,10 @@ const regimentGroups = computed(() => {
     })
     .sort((a, b) => b.playerCount - a.playerCount)
 })
+
+const getPresenceColor = (percentage) => {
+  if (percentage >= 80) return 'success'
+  if (percentage >= 50) return 'warning'
+  return 'error'
+}
 </script>

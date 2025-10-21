@@ -9,6 +9,7 @@ export const useLogStore = defineStore('log', {
     rounds: [],
     warnings: [],
     stats: null,
+    playerSessions: [], // Track player join/leave events
     
     // UI state
     loading: false,
@@ -200,6 +201,7 @@ export const useLogStore = defineStore('log', {
         this.rounds = result.rounds
         this.warnings = result.warnings
         this.stats = result.stats
+        this.playerSessions = result.playerSessions || []
 
         // Set initial time range to data bounds
         if (result.events.length > 0) {
@@ -213,6 +215,7 @@ export const useLogStore = defineStore('log', {
           rounds: result.rounds,
           warnings: result.warnings,
           stats: result.stats,
+          playerSessions: result.playerSessions,
           fileName: file.name,
           timestamp: Date.now()
         })
@@ -271,6 +274,7 @@ export const useLogStore = defineStore('log', {
           this.rounds = data.rounds
           this.warnings = data.warnings
           this.stats = data.stats
+          this.playerSessions = data.playerSessions || []
           this.fileName = data.fileName
           this.lastParsedLog = data.timestamp
           this.regimentTeams = data.regimentTeams || {}
@@ -296,6 +300,7 @@ export const useLogStore = defineStore('log', {
       this.rounds = []
       this.warnings = []
       this.stats = null
+      this.playerSessions = []
       this.fileName = null
       this.lastParsedLog = null
       this.timeRange = [0, 86400]
@@ -337,6 +342,82 @@ export const useLogStore = defineStore('log', {
       const minutes = Math.floor((adjustedSeconds % 3600) / 60)
       const secs = adjustedSeconds % 60
       return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
+    },
+
+    /**
+     * Calculate player presence time for a specific round
+     * @param {string} playerName - Name of the player
+     * @param {number} roundId - ID of the round (null for all rounds)
+     * @returns {Object} - { totalSeconds, percentage, formattedTime }
+     */
+    getPlayerPresenceTime(playerName, roundId = null) {
+      // Get round bounds
+      let roundStart, roundEnd
+      
+      if (roundId !== null) {
+        const round = this.rounds.find(r => r.id === roundId)
+        if (!round) return { totalSeconds: 0, percentage: 0, formattedTime: '00:00:00' }
+        roundStart = round.startTime
+        roundEnd = round.endTime
+      } else {
+        // Use overall time bounds
+        if (this.events.length === 0) return { totalSeconds: 0, percentage: 0, formattedTime: '00:00:00' }
+        const times = this.events.map(e => e.time)
+        roundStart = Math.min(...times)
+        roundEnd = Math.max(...times)
+      }
+      
+      const roundDuration = roundEnd - roundStart
+      if (roundDuration === 0) return { totalSeconds: 0, percentage: 0, formattedTime: '00:00:00' }
+      
+      // Get player's join/leave events for this round
+      const playerEvents = this.playerSessions
+        .filter(s => s.player === playerName && (roundId === null || s.roundId === roundId))
+        .sort((a, b) => a.time - b.time)
+      
+      // Check if player has any respawns in this round (means they were present before round start)
+      const hasRespawns = this.events.some(e => 
+        e.player === playerName && (roundId === null || e.roundId === roundId)
+      )
+      
+      let totalPresenceTime = 0
+      let currentJoinTime = null
+      
+      // If player has respawns but no join event, assume they were present at round start
+      if (hasRespawns && playerEvents.length === 0) {
+        totalPresenceTime = roundDuration
+      } else if (hasRespawns && playerEvents.length > 0 && playerEvents[0].action === 'leave') {
+        // Player was present at start, first event is a leave
+        currentJoinTime = roundStart
+      }
+      
+      // Process join/leave events
+      for (const event of playerEvents) {
+        if (event.action === 'join') {
+          currentJoinTime = Math.max(event.time, roundStart)
+        } else if (event.action === 'leave' && currentJoinTime !== null) {
+          const leaveTime = Math.min(event.time, roundEnd)
+          totalPresenceTime += leaveTime - currentJoinTime
+          currentJoinTime = null
+        }
+      }
+      
+      // If player joined but never left, count until round end
+      if (currentJoinTime !== null) {
+        totalPresenceTime += roundEnd - currentJoinTime
+      }
+      
+      const percentage = Math.round((totalPresenceTime / roundDuration) * 100)
+      const hours = Math.floor(totalPresenceTime / 3600)
+      const minutes = Math.floor((totalPresenceTime % 3600) / 60)
+      const seconds = totalPresenceTime % 60
+      const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`
+      
+      return {
+        totalSeconds: totalPresenceTime,
+        percentage,
+        formattedTime
+      }
     },
 
     applyRegimentReassignments(reassignments) {

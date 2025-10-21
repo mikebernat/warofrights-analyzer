@@ -47,6 +47,14 @@ Documentation for the sharing feature.
 - Data structure
 - Privacy considerations
 
+#### [PLAYER_PRESENCE_TRACKING.md](PLAYER_PRESENCE_TRACKING.md)
+Documentation for player presence tracking.
+- Join/leave event parsing
+- Presence time calculation
+- Multiple join/leave handling
+- Edge cases and scenarios
+- Display format and color coding
+
 ## 🚀 Quick Links
 
 ### Getting Started
