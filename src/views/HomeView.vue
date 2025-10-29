@@ -215,6 +215,13 @@
         </v-row>
 
         <v-row>
+          <!-- Regiment Real-Time Respawns -->
+          <v-col cols="12">
+            <RegimentRespawnsRealTimeChart />
+          </v-col>
+        </v-row>
+
+        <v-row>
           <!-- Players Table -->
           <v-col cols="12">
             <PlayersTable />
@@ -248,6 +255,7 @@ import TopRegimentsByPlayersChart from '../components/TopRegimentsByPlayersChart
 import TopRegimentsChart from '../components/TopRegimentsChart.vue'
 import TopPlayersChart from '../components/TopPlayersChart.vue'
 import RegimentTimelineChart from '../components/RegimentTimelineChart.vue'
+import RegimentRespawnsRealTimeChart from '../components/RegimentRespawnsRealTimeChart.vue'
 import RespawnsPerPlayerChart from '../components/RespawnsPerPlayerChart.vue'
 import PlayersTable from '../components/PlayersTable.vue'
 import ChatTable from '../components/ChatTable.vue'
