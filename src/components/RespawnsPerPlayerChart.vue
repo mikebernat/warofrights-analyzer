@@ -67,7 +67,7 @@ const chartOption = computed(() => {
 
   // Calculate ratio and prepare data
   const ratioData = Object.entries(regimentData)
-    .filter(([regiment, data]) => data.players.size > 3) // Only regiments with more than 3 players
+    .filter(([regiment, data]) => data.players.size >= 1) // Include all regiments with at least 1 player
     .map(([regiment, data]) => ({
       regiment,
       ratio: data.respawns / data.players.size,
@@ -75,7 +75,7 @@ const chartOption = computed(() => {
       players: data.players.size
     }))
     .sort((a, b) => b.ratio - a.ratio)
-    .slice(0, 15) // Top 15 regiments
+    .slice(0, 20) // Top 20 regiments
 
   return {
     tooltip: {
