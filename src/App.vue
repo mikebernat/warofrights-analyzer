@@ -1,7 +1,7 @@
 <template>
   <v-app>
     <v-app-bar color="primary" prominent>
-      <v-app-bar-title @click="$router.push('/')" style="cursor: pointer;">
+      <v-app-bar-title @click="handleLogoClick" style="cursor: pointer;">
         <v-icon class="mr-2">mdi-chart-timeline-variant</v-icon>
         War of Rights Log Analyzer
       </v-app-bar-title>
@@ -75,16 +75,28 @@
 
 <script setup>
 import { ref, computed } from 'vue'
-import { useRoute } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useLogStore } from './stores/logStore'
 import ShareModal from './components/ShareModal.vue'
 import AppFooter from './components/AppFooter.vue'
 
 const route = useRoute()
+const router = useRouter()
 const logStore = useLogStore()
 const showShareModal = ref(false)
 
 const isShareView = computed(() => route.name === 'share')
+
+function handleLogoClick() {
+  // Clear all data and cache
+  logStore.clearCache()
+  
+  // Clear URL parameters and navigate to home
+  router.push('/').then(() => {
+    // Force a full page reload to reset everything
+    window.location.href = '/'
+  })
+}
 </script>
 
 <style scoped>

@@ -322,6 +322,7 @@
 
 <script setup>
 import { onMounted, computed, ref } from 'vue'
+import { useRouter } from 'vue-router'
 import { useLogStore } from '../stores/logStore'
 import { useUrlState } from '../composables/useUrlState'
 import FileUploader from '../components/FileUploader.vue'
@@ -343,6 +344,7 @@ import ChatTable from '../components/ChatTable.vue'
 import TeamAssignment from '../components/TeamAssignment.vue'
 import RegimentReassignment from '../components/RegimentReassignment.vue'
 
+const router = useRouter()
 const logStore = useLogStore()
 const { loadFromUrl, setupWatchers } = useUrlState(logStore)
 
@@ -396,8 +398,13 @@ onMounted(() => {
 })
 
 const clearData = () => {
-  if (confirm('Are you sure you want to clear all data? This will remove the cached log.')) {
+  if (confirm('Are you sure you want to clear all data? This will remove the cached log and reset everything.')) {
     logStore.clearCache()
+    
+    // Clear URL parameters and reload
+    router.push('/').then(() => {
+      window.location.href = '/'
+    })
   }
 }
 </script>
