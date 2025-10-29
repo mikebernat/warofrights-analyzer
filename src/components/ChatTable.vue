@@ -38,6 +38,9 @@
             size="small"
             :color="getRegimentColor(item.regiment)"
             variant="tonal"
+            class="clickable-regiment"
+            @click="openRegimentSelector(item.player, item.regiment)"
+            :title="`Click to reassign ${item.player} from ${item.regiment}`"
           >
             {{ item.regiment }}
           </v-chip>
@@ -58,14 +61,19 @@
         </template>
       </v-data-table>
     </v-card-text>
+
+    <!-- Regiment Selector Dialog -->
+    <RegimentSelectorDialog ref="regimentDialog" />
   </v-card>
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, ref } from 'vue'
 import { useLogStore } from '../stores/logStore'
+import RegimentSelectorDialog from './RegimentSelectorDialog.vue'
 
 const logStore = useLogStore()
+const regimentDialog = ref(null)
 
 const headers = [
   { title: 'Time', key: 'time', sortable: true, width: '120px' },
@@ -108,6 +116,12 @@ function formatTime(seconds) {
   return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`
 }
 
+function openRegimentSelector(playerName, currentRegiment) {
+  if (regimentDialog.value) {
+    regimentDialog.value.open(playerName, currentRegiment)
+  }
+}
+
 function getRegimentColor(regiment) {
   if (regiment === 'Uncategorized') return 'grey'
   
@@ -123,5 +137,15 @@ function getRegimentColor(regiment) {
 <style scoped>
 .text-no-wrap {
   white-space: nowrap;
+}
+
+.clickable-regiment {
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.clickable-regiment:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
 }
 </style>

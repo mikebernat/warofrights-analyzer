@@ -86,6 +86,9 @@
           <v-chip
             size="small"
             :color="item.currentRegiment === 'Uncategorized' ? 'warning' : 'primary'"
+            class="clickable-regiment"
+            @click="openRegimentSelector(item.player, item.currentRegiment)"
+            :title="`Click to reassign ${item.player} from ${item.currentRegiment}`"
           >
             {{ item.currentRegiment }}
           </v-chip>
@@ -165,6 +168,9 @@
         </v-card-actions>
       </v-card>
     </v-dialog>
+
+    <!-- Regiment Selector Dialog -->
+    <RegimentSelectorDialog ref="regimentDialog" />
   </div>
 </template>
 
@@ -172,6 +178,7 @@
 import { ref, computed } from 'vue'
 import { useLogStore } from '../stores/logStore'
 import RegimentFuzzyMatcher from './RegimentFuzzyMatcher.vue'
+import RegimentSelectorDialog from './RegimentSelectorDialog.vue'
 
 const logStore = useLogStore()
 
@@ -181,6 +188,7 @@ const showDebugDialog = ref(false)
 const debugReport = ref('')
 const selectedPlayers = ref([])
 const massUpdateRegiment = ref(null)
+const regimentDialog = ref(null)
 
 const headers = [
   { title: 'Player', key: 'player', sortable: true },
@@ -274,6 +282,12 @@ const filteredPlayers = computed(() => {
 const hasChanges = computed(() => {
   return playerData.value.some(p => p.changed)
 })
+
+function openRegimentSelector(playerName, currentRegiment) {
+  if (regimentDialog.value) {
+    regimentDialog.value.open(playerName, currentRegiment)
+  }
+}
 
 const applyChange = (item) => {
   if (item.newRegiment && item.newRegiment !== item.currentRegiment) {
@@ -491,3 +505,15 @@ const downloadDebugReport = () => {
   URL.revokeObjectURL(url)
 }
 </script>
+
+<style scoped>
+.clickable-regiment {
+  cursor: pointer;
+  transition: transform 0.2s, opacity 0.2s;
+}
+
+.clickable-regiment:hover {
+  transform: scale(1.05);
+  opacity: 0.9;
+}
+</style>

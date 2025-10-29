@@ -545,6 +545,13 @@ export const useLogStore = defineStore('log', {
         }
       })
       
+      // Also update chat messages
+      this.chatMessages.forEach(msg => {
+        if (reassignments[msg.player]) {
+          msg.regiment = reassignments[msg.player]
+        }
+      })
+      
       // Update cache with modified data
       this.cacheToLocalStorage({
         events: this.events,
