@@ -87,7 +87,41 @@
           Assign players to regiments and regiments to teams to improve analysis accuracy.
         </v-card-subtitle>
         <v-card-text>
-          <v-tabs v-model="assignmentTab" color="primary">
+          <v-expansion-panels>
+            <v-expansion-panel>
+              <v-expansion-panel-title>
+                <div class="d-flex align-center w-100">
+                  <v-icon class="mr-2">mdi-pencil</v-icon>
+                  <span class="font-weight-bold">Assignment Editor</span>
+                  <v-spacer></v-spacer>
+                  <div class="mr-4">
+                    <v-chip 
+                      size="small" 
+                      color="warning" 
+                      class="mr-2"
+                      v-if="uncategorizedPlayersCount > 0"
+                    >
+                      {{ uncategorizedPlayersCount }} players need regiments
+                    </v-chip>
+                    <v-chip 
+                      size="small" 
+                      color="warning"
+                      v-if="unassignedRegimentsCount > 0"
+                    >
+                      {{ unassignedRegimentsCount }} regiments need teams
+                    </v-chip>
+                    <v-chip 
+                      size="small" 
+                      color="success"
+                      v-if="uncategorizedPlayersCount === 0 && unassignedRegimentsCount === 0"
+                    >
+                      All assigned
+                    </v-chip>
+                  </div>
+                </div>
+              </v-expansion-panel-title>
+              <v-expansion-panel-text>
+                <v-tabs v-model="assignmentTab" color="primary" class="mt-2">
             <v-tab value="regiment">
               <v-icon class="mr-2">mdi-account-edit</v-icon>
               Regiment Reassignment
@@ -139,6 +173,9 @@
               <TeamAssignment />
             </v-window-item>
           </v-window>
+              </v-expansion-panel-text>
+            </v-expansion-panel>
+          </v-expansion-panels>
         </v-card-text>
       </v-card>
 
@@ -163,37 +200,37 @@
       <!-- Analytics Cards - Only show when round selected -->
       <template v-if="logStore.selectedRoundId !== null">
         <!-- Tabs for organized content -->
-        <v-card class="mb-4 analysis-tabs-card" elevation="4">
-          <v-card-title class="text-h6 bg-primary pa-3">
-            <v-icon class="mr-2">mdi-chart-box</v-icon>
-            Analysis
-          </v-card-title>
-          <v-tabs 
-            v-model="analysisTab" 
-            color="primary" 
-            bg-color="surface"
-            height="60"
-            slider-color="primary"
-            show-arrows
-          >
-            <v-tab value="graphs" class="text-h6">
-              <v-icon class="mr-2" size="large">mdi-chart-line</v-icon>
-              Graphs
-            </v-tab>
-            <v-tab value="players" class="text-h6">
-              <v-icon class="mr-2" size="large">mdi-account-group</v-icon>
-              Players
-            </v-tab>
-            <v-tab value="chat" class="text-h6">
-              <v-icon class="mr-2" size="large">mdi-chat</v-icon>
-              Chat
-            </v-tab>
-          </v-tabs>
+        <div class="sticky-tabs-wrapper">
+          <v-card class="mb-0 analysis-tabs-card" elevation="4">
+            <v-tabs 
+              v-model="analysisTab" 
+              color="primary" 
+              bg-color="surface"
+              height="60"
+              slider-color="grey-darken-2"
+              show-arrows
+            >
+              <v-tab value="graphs" class="text-h6">
+                <v-icon class="mr-2" size="large">mdi-chart-line</v-icon>
+                Graphs
+              </v-tab>
+              <v-tab value="players" class="text-h6">
+                <v-icon class="mr-2" size="large">mdi-account-group</v-icon>
+                Players
+              </v-tab>
+              <v-tab value="chat" class="text-h6">
+                <v-icon class="mr-2" size="large">mdi-chat</v-icon>
+                Chat
+              </v-tab>
+            </v-tabs>
+          </v-card>
+        </div>
 
-          <v-window v-model="analysisTab">
+        <v-card class="mb-4 analysis-tabs-card" elevation="4">
+          <v-window v-model="analysisTab" class="analysis-window">
             <!-- Tab 1: Graphs -->
             <v-window-item value="graphs">
-              <v-container fluid>
+              <v-container fluid class="bg-black">
                 <v-row>
                   <!-- KPI Card -->
                   <v-col cols="12">
@@ -257,7 +294,7 @@
 
             <!-- Tab 2: Players -->
             <v-window-item value="players">
-              <v-container fluid>
+              <v-container fluid class="bg-black">
                 <v-row>
                   <v-col cols="12">
                     <PlayersTable />
@@ -268,7 +305,7 @@
 
             <!-- Tab 3: Chat -->
             <v-window-item value="chat">
-              <v-container fluid>
+              <v-container fluid class="bg-black">
                 <v-row>
                   <v-col cols="12">
                     <ChatTable />
@@ -372,8 +409,24 @@ const clearData = () => {
   z-index: 10;
 }
 
+.sticky-tabs-wrapper {
+  position: sticky;
+  top: calc(129px + 100px); /* App bar (64px) + Step 4 card height */
+  z-index: 9;
+  margin-bottom: 0;
+}
+
+.sticky-tabs-wrapper .analysis-tabs-card {
+  margin-bottom: 0 !important;
+}
+
 .analysis-tabs-card {
-  border: 2px solid rgba(var(--v-theme-primary), 0.3) !important;
+  border: 1px solid rgba(128, 128, 128, 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs-window-item) {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-top: none;
 }
 
 .analysis-tabs-card :deep(.v-tab) {
@@ -384,10 +437,45 @@ const clearData = () => {
 }
 
 .analysis-tabs-card :deep(.v-tab--selected) {
-  background-color: rgba(var(--v-theme-primary), 0.1);
+  background-color: rgb(var(--v-theme-primary));
+  color: white !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.analysis-tabs-card :deep(.v-tab--selected) .v-icon {
+  color: white !important;
+}
+
+.analysis-tabs-card :deep(.v-tab--selected) .v-tab__slider {
+  color: rgba(128, 128, 128, 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs__slider) {
+  background-color: rgba(128, 128, 128, 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tab:focus-visible) {
+  outline: none !important;
+}
+
+.analysis-tabs-card :deep(.v-tab::before) {
+  opacity: 0 !important;
+}
+
+.analysis-tabs-card :deep(.v-tab::after) {
+  opacity: 0 !important;
 }
 
 .analysis-tabs-card :deep(.v-tabs) {
-  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.2);
+  border-bottom: none !important;
+}
+
+.analysis-window {
+  background-color: #121212;
+}
+
+.bg-black {
+  background-color: #121212 !important;
 }
 </style>
