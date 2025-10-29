@@ -87,49 +87,58 @@
           Assign players to regiments and regiments to teams to improve analysis accuracy.
         </v-card-subtitle>
         <v-card-text>
-          <v-expansion-panels multiple>
-            <v-expansion-panel>
-              <v-expansion-panel-title>
-                <div class="d-flex align-center w-100">
-                  <v-icon class="mr-2">mdi-account-edit</v-icon>
-                  <span class="font-weight-bold">Regiment Reassignment</span>
-                  <v-spacer></v-spacer>
-                  <div class="mr-4">
-                    <v-chip size="small" color="warning" class="mr-2" v-if="uncategorizedPlayersCount > 0">
-                      {{ uncategorizedPlayersCount }} players need regiments
-                    </v-chip>
-                    <v-chip size="small" color="success" v-else>
-                      All players assigned
-                    </v-chip>
-                  </div>
-                </div>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <RegimentReassignment />
-              </v-expansion-panel-text>
-            </v-expansion-panel>
+          <v-tabs v-model="assignmentTab" color="primary">
+            <v-tab value="regiment">
+              <v-icon class="mr-2">mdi-account-edit</v-icon>
+              Regiment Reassignment
+              <v-chip 
+                size="small" 
+                color="warning" 
+                class="ml-2" 
+                v-if="uncategorizedPlayersCount > 0"
+              >
+                {{ uncategorizedPlayersCount }}
+              </v-chip>
+              <v-chip 
+                size="small" 
+                color="success" 
+                class="ml-2" 
+                v-else
+              >
+                ✓
+              </v-chip>
+            </v-tab>
+            <v-tab value="team">
+              <v-icon class="mr-2">mdi-shield-sword</v-icon>
+              Team Assignment
+              <v-chip 
+                size="small" 
+                color="warning" 
+                class="ml-2" 
+                v-if="unassignedRegimentsCount > 0"
+              >
+                {{ unassignedRegimentsCount }}
+              </v-chip>
+              <v-chip 
+                size="small" 
+                color="success" 
+                class="ml-2" 
+                v-else
+              >
+                ✓
+              </v-chip>
+            </v-tab>
+          </v-tabs>
 
-            <v-expansion-panel>
-              <v-expansion-panel-title>
-                <div class="d-flex align-center w-100">
-                  <v-icon class="mr-2">mdi-shield-sword</v-icon>
-                  <span class="font-weight-bold">Team Assignment</span>
-                  <v-spacer></v-spacer>
-                  <div class="mr-4">
-                    <v-chip size="small" color="warning" v-if="unassignedRegimentsCount > 0">
-                      {{ unassignedRegimentsCount }} regiments unassigned
-                    </v-chip>
-                    <v-chip size="small" color="success" v-else>
-                      All regiments assigned
-                    </v-chip>
-                  </div>
-                </div>
-              </v-expansion-panel-title>
-              <v-expansion-panel-text>
-                <TeamAssignment />
-              </v-expansion-panel-text>
-            </v-expansion-panel>
-          </v-expansion-panels>
+          <v-window v-model="assignmentTab" class="mt-4">
+            <v-window-item value="regiment">
+              <RegimentReassignment />
+            </v-window-item>
+
+            <v-window-item value="team">
+              <TeamAssignment />
+            </v-window-item>
+          </v-window>
         </v-card-text>
       </v-card>
 
@@ -250,6 +259,9 @@ const { loadFromUrl, setupWatchers } = useUrlState(logStore)
 
 // Upload mode toggle
 const uploadMode = ref('upload')
+
+// Assignment tab state
+const assignmentTab = ref('regiment')
 
 // Count uncategorized players
 const uncategorizedPlayersCount = computed(() => {

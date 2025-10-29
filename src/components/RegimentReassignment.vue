@@ -106,12 +106,6 @@
             @keydown.enter="applyChange(item)"
           ></v-combobox>
         </template>
-
-        <template v-slot:item.actions="{ item }">
-          <v-icon size="small" color="success" v-if="item.currentRegiment !== 'Uncategorized'">
-            mdi-check-circle
-          </v-icon>
-        </template>
       </v-data-table>
 
       <!-- Action buttons -->
@@ -192,8 +186,7 @@ const headers = [
   { title: 'Player', key: 'player', sortable: true },
   { title: 'Current Regiment', key: 'currentRegiment', sortable: true },
   { title: 'Respawns', key: 'respawns', sortable: true },
-  { title: 'New Regiment', key: 'newRegiment', sortable: false },
-  { title: 'Actions', key: 'actions', sortable: false, width: 80 }
+  { title: 'New Regiment', key: 'newRegiment', sortable: false }
 ]
 
 // Get unique players with their current regiments
