@@ -378,7 +378,8 @@ const unassignedRegimentsCount = computed(() => {
   
   let unassigned = 0
   regiments.forEach(regiment => {
-    if (!logStore.getRegimentTeam(regiment, roundId)) {
+    // Exclude 'Uncategorized' from count (handled in Regiment Reassignment)
+    if (regiment !== 'Uncategorized' && !logStore.getRegimentTeam(regiment, roundId)) {
       unassigned++
     }
   })
