@@ -16,7 +16,7 @@ export const shareAPI = {
    * @returns {Promise<{shareId: string, expiresAt: string}>}
    */
   async createShare(analysis) {
-    const response = await api.post('/api/share', { analysis })
+    const response = await api.post('/share', { analysis })
     return response.data
   },
 
@@ -26,7 +26,7 @@ export const shareAPI = {
    * @returns {Promise<Object>} The shared analysis data
    */
   async getShare(shareId) {
-    const response = await api.get(`/api/share/${shareId}`)
+    const response = await api.get(`/share/${shareId}`)
     return response.data
   },
 
@@ -35,7 +35,7 @@ export const shareAPI = {
    * @returns {Promise<Object>}
    */
   async healthCheck() {
-    const response = await api.get('/api/health')
+    const response = await api.get('/health')
     return response.data
   }
 }

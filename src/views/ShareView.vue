@@ -47,14 +47,15 @@
         </div>
       </v-alert>
 
-      <!-- Round Info Card -->
-      <v-card class="mb-4">
+      <!-- Combined Round Info and Filters (Sticky) -->
+      <v-card class="mb-4 sticky-filters">
         <v-card-title class="bg-primary">
           <v-icon class="mr-2">mdi-information</v-icon>
-          Round Information
+          Round Information & Filters
         </v-card-title>
         <v-card-text class="pt-4">
-          <v-row>
+          <!-- Round Info -->
+          <v-row class="mb-4">
             <v-col cols="12" md="3">
               <div class="text-caption text-medium-emphasis">Map</div>
               <div class="text-h6">{{ shareData.roundInfo.map }}</div>
@@ -66,8 +67,14 @@
             <v-col cols="12" md="3">
               <div class="text-caption text-medium-emphasis">Winner</div>
               <div class="text-h6">
-                <v-chip :color="shareData.roundInfo.winner === 'USA' ? 'blue' : 'red'">
+                <v-chip 
+                  v-if="shareData.roundInfo.winner"
+                  :color="shareData.roundInfo.winner === 'USA' ? 'blue' : 'red'"
+                >
                   {{ shareData.roundInfo.winner }}
+                </v-chip>
+                <v-chip v-else color="grey">
+                  N/A
                 </v-chip>
               </div>
             </v-col>
@@ -76,86 +83,124 @@
               <div class="text-h6">{{ shareData.events.length }}</div>
             </v-col>
           </v-row>
-        </v-card-text>
-      </v-card>
-
-      <!-- Filters -->
-      <v-card variant="outlined" class="mb-4">
-        <v-card-text>
+          
+          <!-- Filters -->
           <v-row>
-            <v-col cols="12">
-              <TimeSlider />
-            </v-col>
-            <v-col cols="12">
+            <v-col cols="12" md="4">
               <FilterInput />
+            </v-col>
+            <v-col cols="12" md="8">
+              <TimeSlider />
             </v-col>
           </v-row>
         </v-card-text>
       </v-card>
 
-      <!-- KPI Cards -->
-      <v-row>
-          <!-- KPI Card -->
-          <v-col cols="12">
-            <KpiCard />
-          </v-col>
-        </v-row>
+      <!-- Tabs for organized content -->
+      <div class="sticky-tabs-wrapper">
+        <v-card class="mb-0 analysis-tabs-card" elevation="4">
+          <v-tabs 
+            v-model="analysisTab" 
+            color="primary" 
+            bg-color="surface"
+            height="60"
+            slider-color="grey-darken-2"
+            show-arrows
+          >
+            <v-tab value="graphs" class="text-h6">
+              <v-icon class="mr-2" size="large">mdi-chart-line</v-icon>
+              Graphs
+            </v-tab>
+            <v-tab value="players" class="text-h6">
+              <v-icon class="mr-2" size="large">mdi-account-group</v-icon>
+              Players
+            </v-tab>
+            <v-tab value="chat" class="text-h6">
+              <v-icon class="mr-2" size="large">mdi-chat</v-icon>
+              Chat
+            </v-tab>
+          </v-tabs>
+        </v-card>
+      </div>
 
-        <v-row>
-          <!-- Respawns Over Time -->
-          <v-col cols="12">
-            <RespawnsTimelineChart />
-          </v-col>
-        </v-row>
+      <v-card class="mb-4 analysis-tabs-card" elevation="4">
+        <v-window v-model="analysisTab" class="analysis-window">
+          <!-- Tab 1: Graphs -->
+          <v-window-item value="graphs">
+            <v-container fluid class="bg-black">
+              <v-row>
+                <v-col cols="12">
+                  <KpiCard />
+                </v-col>
+              </v-row>
 
-        <v-row>
-          <!-- Cumulative Respawns -->
-          <v-col cols="12">
-            <CumulativeRespawnsChart />
-          </v-col>
-        </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <RespawnsTimelineChart />
+                </v-col>
+              </v-row>
 
-      <v-row>
-        <v-col cols="12" md="6">
-          <TopRegimentsByPlayersChart />
-        </v-col>
-        <v-col cols="12" md="6">
-          <TopRegimentsChart />
-        </v-col>
-      </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <CumulativeRespawnsChart />
+                </v-col>
+              </v-row>
 
-      <v-row>
-        <v-col cols="12" md="6">
-          <TopPlayersChart />
-        </v-col>
-        <v-col cols="12" md="6">
-          <RespawnsPerPlayerChart />
-        </v-col>
-      </v-row>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <TopRegimentsByPlayersChart />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <TopRegimentsChart />
+                </v-col>
+              </v-row>
 
-      <v-row>
-        <v-col cols="12">
-          <RegimentTimelineChart />
-        </v-col>
-      </v-row>
+              <v-row>
+                <v-col cols="12" md="6">
+                  <TopPlayersChart />
+                </v-col>
+                <v-col cols="12" md="6">
+                  <RespawnsPerPlayerChart />
+                </v-col>
+              </v-row>
 
-      <v-row>
-        <v-col cols="12">
-          <RegimentRespawnsRealTimeChart />
-        </v-col>
-      </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <RegimentTimelineChart />
+                </v-col>
+              </v-row>
 
-      <v-row>
-        <v-col cols="12">
-          <PlayersTable />
-        </v-col>
-      </v-row>
+              <v-row>
+                <v-col cols="12">
+                  <RegimentRespawnsRealTimeChart />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-window-item>
 
-      <v-row>
-        <v-col cols="12">
-          <ChatTable />
-        </v-col>
-      </v-row>
+          <!-- Tab 2: Players -->
+          <v-window-item value="players">
+            <v-container fluid class="bg-black">
+              <v-row>
+                <v-col cols="12">
+                  <PlayersTable />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-window-item>
+
+          <!-- Tab 3: Chat -->
+          <v-window-item value="chat">
+            <v-container fluid class="bg-black">
+              <v-row>
+                <v-col cols="12">
+                  <ChatTable />
+                </v-col>
+              </v-row>
+            </v-container>
+          </v-window-item>
+        </v-window>
+      </v-card>
     </template>
   </v-container>
 </template>
@@ -190,6 +235,7 @@ const loading = ref(true)
 const error = ref(false)
 const errorMessage = ref('')
 const shareData = ref(null)
+const analysisTab = ref('graphs')
 
 // Computed properties
 const uniquePlayersCount = computed(() => {
@@ -269,5 +315,79 @@ onMounted(() => {
 </script>
 
 <style scoped>
-/* Add any specific styles for share view */
+.sticky-filters {
+  position: sticky;
+  top: 64px; /* Height of Vuetify app bar */
+  z-index: 10;
+}
+
+.sticky-tabs-wrapper {
+  position: sticky;
+  top: calc(223px + 100px); /* App bar (64px) + Filters card height */
+  z-index: 9;
+  margin-bottom: 0;
+}
+
+.sticky-tabs-wrapper .analysis-tabs-card {
+  margin-bottom: 0 !important;
+}
+
+.analysis-tabs-card {
+  border: 1px solid rgba(128, 128, 128, 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs-window-item) {
+  border: 1px solid rgba(128, 128, 128, 0.3);
+  border-top: none;
+}
+
+.analysis-tabs-card :deep(.v-tab) {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  font-size: 1.1rem;
+}
+
+.analysis-tabs-card :deep(.v-tab--selected) {
+  background-color: rgb(var(--v-theme-primary));
+  color: white !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.analysis-tabs-card :deep(.v-tab--selected) .v-icon {
+  color: white !important;
+}
+
+.analysis-tabs-card :deep(.v-tab--selected) .v-tab__slider {
+  color: rgba(128, 128, 128, 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs__slider) {
+  background-color: rgba(128, 128, 128, 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tab:focus-visible) {
+  outline: none !important;
+}
+
+.analysis-tabs-card :deep(.v-tab::before) {
+  opacity: 0 !important;
+}
+
+.analysis-tabs-card :deep(.v-tab::after) {
+  opacity: 0 !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs) {
+  border-bottom: none !important;
+}
+
+.analysis-window {
+  background-color: #121212;
+}
+
+.bg-black {
+  background-color: #121212 !important;
+}
 </style>
