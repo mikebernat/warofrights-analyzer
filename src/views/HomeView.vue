@@ -187,11 +187,11 @@
         </v-card-title>
         <v-card-text class="pt-4">
           <v-row>
-            <v-col cols="12" md="8">
-              <TimeSlider />
-            </v-col>
             <v-col cols="12" md="4">
               <FilterInput />
+            </v-col>
+            <v-col cols="12" md="8">
+              <TimeSlider />
             </v-col>
           </v-row>
         </v-card-text>
