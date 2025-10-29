@@ -107,6 +107,20 @@ The sharing feature allows users to generate shareable links to their analysis d
     }
   ],
   "parsingConfig": { /* current parsing rules */ },
+  "playerSessions": [
+    {
+      "player": "PlayerName",
+      "roundId": 1,
+      "action": "join",
+      "time": 100
+    },
+    {
+      "player": "PlayerName",
+      "roundId": 1,
+      "action": "leave",
+      "time": 3500
+    }
+  ],
   "metadata": {
     "shareId": "abc123..._2025-10-19T22-00-00-000Z",
     "createdAt": "2025-10-19T22:00:00Z",

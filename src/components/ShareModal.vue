@@ -206,12 +206,16 @@ const analysisData = computed(() => {
     }
   })
 
+  // Get player sessions for selected round only
+  const roundPlayerSessions = logStore.playerSessions.filter(s => s.roundId === logStore.selectedRoundId)
+
   return {
     events: roundEvents,
     roundInfo: round,
     teamAssignments,
     manualReassignments: logStore.manualReassignments,
-    parsingConfig: logStore.getParsingConfig()
+    parsingConfig: logStore.getParsingConfig(),
+    playerSessions: roundPlayerSessions
   }
 })
 

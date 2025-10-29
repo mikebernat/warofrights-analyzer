@@ -208,6 +208,9 @@ async function loadSharedAnalysis() {
     logStore.selectedRoundId = shareData.value.roundInfo.id
     logStore.fileName = `Shared: ${shareData.value.roundInfo.map}`
     
+    // Load player sessions (presence time data)
+    logStore.playerSessions = shareData.value.playerSessions || []
+    
     // Load team assignments
     Object.entries(shareData.value.teamAssignments).forEach(([regiment, team]) => {
       logStore.setRegimentTeam(regiment, team, shareData.value.roundInfo.id)
