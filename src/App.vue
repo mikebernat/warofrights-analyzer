@@ -19,16 +19,30 @@
       >
         Export CSV
       </v-btn>
-      <v-btn
-        v-if="logStore.fileName && !isShareView"
-        :disabled="logStore.selectedRoundId === null"
-        @click="showShareModal = true"
-        color="white"
-        variant="text"
-        prepend-icon="mdi-share-variant"
-      >
-        Share
-      </v-btn>
+      <v-tooltip location="bottom">
+        <template v-slot:activator="{ props }">
+          <v-btn
+            v-if="logStore.fileName && !isShareView"
+            :disabled="logStore.selectedRoundId === null || logStore.isLiveMonitoring"
+            @click="showShareModal = true"
+            color="white"
+            variant="text"
+            prepend-icon="mdi-share-variant"
+            v-bind="props"
+          >
+            Share
+          </v-btn>
+        </template>
+        <span v-if="logStore.isLiveMonitoring">
+          Sharing is disabled during live monitoring. Stop monitoring to share this analysis.
+        </span>
+        <span v-else-if="logStore.selectedRoundId === null">
+          Select a round to share
+        </span>
+        <span v-else>
+          Share this analysis with others
+        </span>
+      </v-tooltip>
     </v-app-bar>
 
     <!-- Share Modal -->

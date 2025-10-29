@@ -1,6 +1,6 @@
 # WOR Log Analyzer - Backend Server
 
-Express.js backend for sharing analysis data.
+Express.js backend for sharing analysis data and live log monitoring.
 
 ## Setup
 
@@ -8,6 +8,13 @@ Express.js backend for sharing analysis data.
 cd server
 npm install
 ```
+
+## Services
+
+This server package includes two separate services:
+
+1. **Share API Server** (`server.js`) - For sharing analysis data
+2. **Live Monitor Server** (`live-monitor-server.js`) - For real-time log monitoring via WebSocket
 
 ## Configuration
 
@@ -23,15 +30,32 @@ CORS_ORIGIN=http://localhost:5173
 
 ## Running
 
-### Development
+### Share API Server
+
+**Development:**
 ```bash
 npm run dev
 ```
 
-### Production
+**Production:**
 ```bash
 npm start
 ```
+
+### Live Monitor Server
+
+**Development:**
+```bash
+npm run live-monitor:dev
+```
+
+**Production:**
+```bash
+npm run live-monitor
+```
+
+**Environment Variables:**
+- `LIVE_MONITOR_PORT` - Port for WebSocket server (default: 3001)
 
 ## API Endpoints
 
@@ -81,6 +105,63 @@ Retrieve a shared analysis.
 
 ### GET /api/health
 Health check endpoint.
+
+## Live Monitor WebSocket API
+
+The Live Monitor Server provides a WebSocket endpoint for real-time log file monitoring.
+
+### Connection
+```javascript
+const ws = new WebSocket('ws://localhost:3001')
+```
+
+### Start Monitoring
+```javascript
+ws.send(JSON.stringify({
+  type: 'start',
+  filePath: 'C:\\Path\\To\\War of Rights\\WarOfRights\\Saved\\Logs\\game.log'
+}))
+```
+
+### Receive Updates
+```javascript
+ws.onmessage = (event) => {
+  const data = JSON.parse(event.data)
+  
+  switch (data.type) {
+    case 'started':
+      console.log('Monitoring started:', data.filePath)
+      break
+    case 'update':
+      console.log('New content:', data.content)
+      console.log('File size:', data.size)
+      break
+    case 'error':
+      console.error('Error:', data.message)
+      break
+  }
+}
+```
+
+### Stop Monitoring
+```javascript
+ws.send(JSON.stringify({ type: 'stop' }))
+```
+
+### Message Types
+
+**Client → Server:**
+- `start` - Start monitoring a file
+- `stop` - Stop monitoring
+- `ping` - Keep-alive ping
+
+**Server → Client:**
+- `started` - Monitoring started successfully
+- `update` - New file content available
+- `error` - Error occurred
+- `pong` - Response to ping
+
+For more details, see [Live Monitoring Documentation](../docs/LIVE_MONITORING.md).
 
 ## Cleanup
 

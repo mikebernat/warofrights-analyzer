@@ -12,15 +12,41 @@
       No data is uploaded to any server. Your logs remain completely private.
     </v-alert>
 
-    <!-- Step 1: Upload Log File -->
+    <!-- Step 1: Upload Log File or Start Live Monitoring -->
     <v-card class="mb-4">
       <v-card-title class="bg-primary">
         <v-icon class="mr-2">mdi-numeric-1-circle</v-icon>
-        Step 1: Upload a Replay Log File
+        Step 1: Upload a Replay Log File or Monitor Live
       </v-card-title>
       <v-card-text class="pt-4">
-        <FileUploader v-if="!logStore.fileName" />
-        <div v-else>
+        <div v-if="!logStore.fileName">
+          <!-- Mode Toggle -->
+          <v-btn-toggle
+            v-model="uploadMode"
+            mandatory
+            color="primary"
+            class="mb-4"
+            divided
+          >
+            <v-btn value="upload">
+              <v-icon start>mdi-upload</v-icon>
+              Upload File
+            </v-btn>
+            <v-btn value="live">
+              <v-icon start>mdi-monitor-eye</v-icon>
+              Live Monitor
+            </v-btn>
+          </v-btn-toggle>
+
+          <!-- Upload Mode -->
+          <FileUploader v-if="uploadMode === 'upload'" />
+        </div>
+        
+        <!-- Live Monitor Mode - Keep mounted to prevent unmount during initialization -->
+        <LiveMonitor v-if="uploadMode === 'live'" />
+        
+        <!-- File loaded indicator (non-live mode) -->
+        <div v-if="logStore.fileName && !logStore.isLiveMonitoring">
           <v-chip color="success" size="large" class="mr-2">
             <v-icon start>mdi-file-check</v-icon>
             {{ logStore.fileName }}
@@ -191,10 +217,11 @@
 </template>
 
 <script setup>
-import { onMounted, computed } from 'vue'
+import { onMounted, computed, ref } from 'vue'
 import { useLogStore } from '../stores/logStore'
 import { useUrlState } from '../composables/useUrlState'
 import FileUploader from '../components/FileUploader.vue'
+import LiveMonitor from '../components/LiveMonitor.vue'
 import RoundSelector from '../components/RoundSelector.vue'
 import TimeSlider from '../components/TimeSlider.vue'
 import FilterInput from '../components/FilterInput.vue'
@@ -212,6 +239,9 @@ import RegimentReassignment from '../components/RegimentReassignment.vue'
 
 const logStore = useLogStore()
 const { loadFromUrl, setupWatchers } = useUrlState(logStore)
+
+// Upload mode toggle
+const uploadMode = ref('upload')
 
 // Count uncategorized players
 const uncategorizedPlayersCount = computed(() => {

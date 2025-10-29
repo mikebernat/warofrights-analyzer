@@ -5,6 +5,11 @@ A single-page web application for analyzing War of Rights game logs. Built with 
 ## Features
 
 - **Client-Side Parsing**: All parsing occurs in your browser using Web Workers - no server uploads
+- **Live Monitoring**: Real-time monitoring of active game.log files during gameplay (Chrome/Edge 86+)
+  - Incremental parsing of new log entries
+  - Live statistics and event feed
+  - Configurable poll interval
+  - See [LIVE_MONITORING_GUIDE.md](docs/features/LIVE_MONITORING_GUIDE.md) for details
 - **Time-Based Filtering**: Second-level precision time slider to filter data
 - **Search & Filter**: Free-form text search for players and regiments
 - **Multiple Visualizations**:

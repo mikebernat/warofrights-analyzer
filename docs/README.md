@@ -1,10 +1,29 @@
 # Documentation
 
-This folder contains comprehensive documentation for deploying and understanding the War of Rights Log Analyzer.
+Comprehensive documentation for the War of Rights Log Analyzer.
 
-## 📚 Documentation Index
+## 📚 Quick Navigation
 
-### Deployment Guides
+### 🎮 User Guides
+
+#### [LIVE_MONITORING_GUIDE.md](features/LIVE_MONITORING_GUIDE.md) ⭐ NEW
+Complete guide for real-time log monitoring.
+- Quick start (3 steps)
+- Windows hard link setup
+- Features and capabilities
+- Troubleshooting and FAQ
+
+#### [LIVE_MONITORING_QUICKSTART.md](features/LIVE_MONITORING_QUICKSTART.md)
+Quick reference for live monitoring setup.
+
+#### [WINDOWS_HARD_LINK_GUIDE.md](features/WINDOWS_HARD_LINK_GUIDE.md)
+Detailed Windows hard link instructions.
+- Why it's needed
+- Step-by-step creation
+- Troubleshooting
+- Alternative locations
+
+### 🚀 Deployment Guides
 
 #### [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md)
 Complete guide for deploying to Digital Ocean App Platform.
@@ -22,7 +41,27 @@ Complete guide for Docker-based deployments.
 - Volume management
 - Multi-service orchestration
 
-### Reference Documentation
+### 📖 Feature Documentation
+
+#### [FUZZY_REGIMENT_MATCHER.md](FUZZY_REGIMENT_MATCHER.md)
+Regiment name parsing and normalization.
+- Pattern matching
+- Fuzzy matching algorithm
+- Configuration
+
+#### [MASS_REGIMENT_UPDATE.md](MASS_REGIMENT_UPDATE.md)
+Bulk regiment reassignment feature.
+- Pattern-based updates
+- Preview and apply
+- Undo functionality
+
+#### [PARSING_IMPROVEMENTS.md](PARSING_IMPROVEMENTS.md)
+Log parsing enhancements.
+- Round detection
+- Pseudo-rounds
+- Event filtering
+
+### 📖 Reference Documentation
 
 #### [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
 Complete reference for all environment variables.
@@ -55,22 +94,35 @@ Documentation for player presence tracking.
 - Edge cases and scenarios
 - Display format and color coding
 
-## 🚀 Quick Links
+## 🚀 Quick Start Guides
 
-### Getting Started
+### For Users
+1. **Live Monitoring**: [LIVE_MONITORING_GUIDE.md](features/LIVE_MONITORING_GUIDE.md) - Real-time analysis
+2. **Windows Setup**: [WINDOWS_HARD_LINK_GUIDE.md](features/WINDOWS_HARD_LINK_GUIDE.md) - One-time setup
+
+### For Developers
 1. **Local Development**: See main [README.md](../README.md)
-2. **Docker Deployment**: [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
-3. **Cloud Deployment**: [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md)
+2. **Project Structure**: [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)
+3. **Feature Implementation**: [features/](features/) folder
+
+### For Deployment
+1. **Docker**: [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md) - Self-hosted
+2. **Digital Ocean**: [DIGITALOCEAN_DEPLOYMENT.md](DIGITALOCEAN_DEPLOYMENT.md) - Cloud platform
+3. **Environment Setup**: [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
+
+## 🔍 Find What You Need
 
 ### Common Tasks
-- **Configure environment variables**: [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
-- **Set up sharing feature**: [SHARING_FEATURE.md](SHARING_FEATURE.md)
-- **Understand project structure**: [PROJECT_STRUCTURE.md](PROJECT_STRUCTURE.md)
+- **Start live monitoring**: [LIVE_MONITORING_QUICKSTART.md](features/LIVE_MONITORING_QUICKSTART.md)
+- **Create Windows hard link**: [WINDOWS_HARD_LINK_GUIDE.md](features/WINDOWS_HARD_LINK_GUIDE.md)
+- **Configure environment**: [ENVIRONMENT_VARIABLES.md](ENVIRONMENT_VARIABLES.md)
+- **Set up sharing**: [SHARING_FEATURE.md](SHARING_FEATURE.md)
+- **Deploy to production**: [DOCKER_DEPLOYMENT.md](DOCKER_DEPLOYMENT.md)
 
 ### Troubleshooting
-- **Digital Ocean issues**: See [DIGITALOCEAN_DEPLOYMENT.md#troubleshooting](DIGITALOCEAN_DEPLOYMENT.md#troubleshooting)
-- **Docker issues**: See [DOCKER_DEPLOYMENT.md#troubleshooting](DOCKER_DEPLOYMENT.md#troubleshooting)
-- **Environment variables**: See [ENVIRONMENT_VARIABLES.md#troubleshooting](ENVIRONMENT_VARIABLES.md#troubleshooting)
+- **Live monitoring issues**: [LIVE_MONITORING_GUIDE.md#troubleshooting](features/LIVE_MONITORING_GUIDE.md#troubleshooting)
+- **Hard link problems**: [WINDOWS_HARD_LINK_GUIDE.md#troubleshooting](features/WINDOWS_HARD_LINK_GUIDE.md#troubleshooting)
+- **Deployment issues**: [DOCKER_DEPLOYMENT.md#troubleshooting](DOCKER_DEPLOYMENT.md#troubleshooting)
 
 ## 📋 Deployment Comparison
 
@@ -96,10 +148,34 @@ Documentation for player presence tracking.
 - **Digital Ocean Docs**: [App Platform Documentation](https://docs.digitalocean.com/products/app-platform/)
 - **Docker Docs**: [Docker Documentation](https://docs.docker.com/)
 
+## 📁 Documentation Structure
+
+```
+docs/
+├── README.md (this file)
+├── DOCKER_DEPLOYMENT.md             # Docker deployment
+├── DIGITALOCEAN_DEPLOYMENT.md       # Cloud deployment
+├── ENVIRONMENT_VARIABLES.md         # Configuration reference
+├── PROJECT_STRUCTURE.md             # Code organization
+├── SHARING_FEATURE.md               # Sharing functionality
+├── FUZZY_REGIMENT_MATCHER.md        # Regiment parsing
+├── MASS_REGIMENT_UPDATE.md          # Bulk updates
+├── PARSING_IMPROVEMENTS.md          # Parser enhancements
+└── features/                        # Feature documentation
+    ├── LIVE_MONITORING_GUIDE.md          # Complete live monitoring guide
+    ├── LIVE_MONITORING_QUICKSTART.md     # Quick reference
+    ├── WINDOWS_HARD_LINK_GUIDE.md        # Windows setup details
+    ├── PLAYER_PRESENCE_TRACKING.md       # Presence calculation
+    ├── LIVE_MONITORING_IMPLEMENTATION.md # Technical implementation
+    ├── REFACTOR_LIVE_MONITORING_UI.md    # UI architecture
+    ├── FEATURE_AUTO_SELECT_ROUND.md      # Auto-selection logic
+    └── FEATURE_DISABLE_SHARE_LIVE.md     # Share button behavior
+```
+
 ## 🔄 Keeping Documentation Updated
 
-When making changes to the application:
-1. Update relevant documentation files
-2. Test all deployment methods
-3. Update troubleshooting sections with new issues
-4. Keep environment variable references current
+When making changes:
+1. Update relevant user-facing docs
+2. Add technical details to `features/` folder
+3. Update troubleshooting sections
+4. Keep quick start guides current

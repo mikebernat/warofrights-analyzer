@@ -2,6 +2,10 @@ import { defineStore } from 'pinia'
 import { wrap, proxy } from 'comlink'
 import parsingConfig from '../config/parsing-config.json'
 
+// Store worker outside of reactive state to prevent circular reference issues
+let liveMonitorWorker = null
+let liveMonitorParser = null
+
 export const useLogStore = defineStore('log', {
   state: () => ({
     // Raw data
@@ -28,7 +32,10 @@ export const useLogStore = defineStore('log', {
     manualReassignments: [], // Array of { playerName, originalRegiment, newRegiment, timestamp, playerNamePattern }
     
     // Cached data
-    lastParsedLog: null
+    lastParsedLog: null,
+    
+    // Live monitoring state
+    isLiveMonitoring: false
   }),
 
   getters: {
@@ -627,6 +634,120 @@ export const useLogStore = defineStore('log', {
         default:
           return '#9E9E9E' // Gray
       }
+    },
+
+    /**
+     * Start live monitoring mode
+     */
+    async startLiveMonitoring(fileName) {
+      try {
+        // Create live monitor worker
+        const Worker = await import('../workers/live-monitor.worker.js?worker')
+        liveMonitorWorker = new Worker.default()
+        liveMonitorParser = wrap(liveMonitorWorker)
+
+        // Reset parser state
+        await liveMonitorParser.reset()
+
+        this.isLiveMonitoring = true
+        this.fileName = fileName
+        this.events = []
+        this.rounds = []
+        this.warnings = []
+        this.playerSessions = []
+        this.stats = null
+        this.selectedRoundId = null // Reset round selection
+
+        console.log('Live monitoring started for:', fileName)
+      } catch (error) {
+        console.error('Error starting live monitoring:', error)
+        throw error
+      }
+    },
+
+    /**
+     * Process a chunk of new log data during live monitoring
+     */
+    async processLiveUpdate(chunk) {
+      if (!this.isLiveMonitoring || !liveMonitorParser) {
+        throw new Error('Live monitoring not active')
+      }
+
+      try {
+        // Track previous round count
+        const previousRoundCount = this.rounds.length
+
+        // Process the chunk incrementally
+        const result = await liveMonitorParser.processChunk(chunk)
+
+        // Get full state from worker
+        const state = await liveMonitorParser.getState()
+
+        // Update store with accumulated data
+        this.events = state.events
+        this.rounds = state.rounds
+        this.warnings = state.warnings
+        this.playerSessions = state.playerSessions
+        this.stats = state.stats
+
+        // Auto-select latest round when new round is detected
+        if (state.rounds.length > previousRoundCount && state.rounds.length > 0) {
+          const latestRound = state.rounds[state.rounds.length - 1]
+          this.setSelectedRound(latestRound.id)
+          console.log(`Auto-selected new round ${latestRound.id}`)
+        }
+
+        // Update time range to include new data
+        if (state.events.length > 0) {
+          const times = state.events.map(e => e.time)
+          this.timeRange = [Math.min(...times), Math.max(...times)]
+        }
+
+        return {
+          newEvents: result.newEvents,
+          newWarnings: result.newWarnings,
+          newPlayerSessions: result.newPlayerSessions,
+          totalEvents: result.totalEvents,
+          totalRounds: result.totalRounds,
+          stats: result.stats
+        }
+      } catch (error) {
+        console.error('Error processing live update:', error)
+        throw error
+      }
+    },
+
+    /**
+     * Reset live monitoring parser state
+     */
+    async resetLiveMonitoring() {
+      if (!liveMonitorParser) return
+
+      try {
+        await liveMonitorParser.reset()
+        this.events = []
+        this.rounds = []
+        this.warnings = []
+        this.playerSessions = []
+        this.stats = null
+        this.timeRange = [0, 86400]
+      } catch (error) {
+        console.error('Error resetting live monitoring:', error)
+        throw error
+      }
+    },
+
+    /**
+     * Stop live monitoring
+     */
+    stopLiveMonitoring() {
+      if (liveMonitorWorker) {
+        liveMonitorWorker.terminate()
+        liveMonitorWorker = null
+        liveMonitorParser = null
+      }
+      this.isLiveMonitoring = false
+      console.log('Live monitoring stopped')
     }
   }
 })

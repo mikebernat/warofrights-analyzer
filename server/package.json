@@ -7,12 +7,15 @@
   "scripts": {
     "start": "node server.js",
     "dev": "node --watch server.js",
-    "cleanup": "node cleanup-shares.js"
+    "cleanup": "node cleanup-shares.js",
+    "live-monitor": "node live-monitor-server.js",
+    "live-monitor:dev": "node --watch live-monitor-server.js"
   },
   "dependencies": {
     "express": "^4.18.2",
     "cors": "^2.8.5",
     "express-rate-limit": "^7.1.5",
-    "@aws-sdk/client-s3": "^3.450.0"
+    "@aws-sdk/client-s3": "^3.450.0",
+    "ws": "^8.14.2"
   }
 }
