@@ -144,6 +144,12 @@
           <PlayersTable />
         </v-col>
       </v-row>
+
+      <v-row>
+        <v-col cols="12">
+          <ChatTable />
+        </v-col>
+      </v-row>
     </template>
   </v-container>
 </template>
@@ -165,6 +171,7 @@ import TopPlayersChart from '../components/TopPlayersChart.vue'
 import RegimentTimelineChart from '../components/RegimentTimelineChart.vue'
 import RespawnsPerPlayerChart from '../components/RespawnsPerPlayerChart.vue'
 import PlayersTable from '../components/PlayersTable.vue'
+import ChatTable from '../components/ChatTable.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -210,6 +217,9 @@ async function loadSharedAnalysis() {
     
     // Load player sessions (presence time data)
     logStore.playerSessions = shareData.value.playerSessions || []
+    
+    // Load chat messages
+    logStore.chatMessages = shareData.value.chatMessages || []
     
     // Load team assignments
     Object.entries(shareData.value.teamAssignments).forEach(([regiment, team]) => {

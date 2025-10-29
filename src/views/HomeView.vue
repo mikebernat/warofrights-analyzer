@@ -211,6 +211,13 @@
             <PlayersTable />
           </v-col>
         </v-row>
+
+        <v-row>
+          <!-- Chat Table -->
+          <v-col cols="12">
+            <ChatTable />
+          </v-col>
+        </v-row>
       </template>
     </template>
   </v-container>
@@ -234,6 +241,7 @@ import TopPlayersChart from '../components/TopPlayersChart.vue'
 import RegimentTimelineChart from '../components/RegimentTimelineChart.vue'
 import RespawnsPerPlayerChart from '../components/RespawnsPerPlayerChart.vue'
 import PlayersTable from '../components/PlayersTable.vue'
+import ChatTable from '../components/ChatTable.vue'
 import TeamAssignment from '../components/TeamAssignment.vue'
 import RegimentReassignment from '../components/RegimentReassignment.vue'
 

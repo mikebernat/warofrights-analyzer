@@ -128,6 +128,7 @@ class LogParser {
     const events = []
     const warnings = []
     const playerSessions = [] // Track join/leave events
+    const chatMessages = [] // Track chat messages
     
     let initialized = false
     let currentRound = null
@@ -248,6 +249,26 @@ class LogParser {
         }
       }
 
+      // Track team chat messages
+      // Format: <13:50:53> [Team] col.Curz: Payne where my legs
+      if (line.includes('[Team]')) {
+        const match = line.match(/\[Team\]\s+([^:]+):\s+(.+)/)
+        if (match) {
+          const playerName = match[1].trim()
+          const message = match[2].trim()
+          const regiment = this.extractRegiment(playerName)
+          
+          chatMessages.push({
+            time: timestamp,
+            player: playerName,
+            regiment,
+            message,
+            roundId: currentRound ? currentRound.id : null,
+            map: currentMap || 'Unknown Map'
+          })
+        }
+      }
+
       // Track respawns
       if (line.includes('[CPlayer::ClDoRespawn]')) {
         const match = line.match(/\[CPlayer::ClDoRespawn\]\s+"([^"]+)"/)
@@ -356,9 +377,11 @@ class LogParser {
       rounds,
       warnings,
       playerSessions,
+      chatMessages,
       stats: {
         totalRespawns: events.length,
         totalRounds: rounds.length,
+        totalChatMessages: chatMessages.length,
         maps: [...new Set(events.map(e => e.map))],
         players: [...new Set(events.map(e => e.player))].length,
         regiments: [...new Set(events.map(e => e.regiment))].length

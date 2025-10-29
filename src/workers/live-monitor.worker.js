@@ -27,6 +27,7 @@ class LiveMonitorParser {
     this.allRounds = []
     this.allWarnings = []
     this.allPlayerSessions = []
+    this.allChatMessages = []
   }
 
   /**
@@ -240,6 +241,26 @@ class LiveMonitorParser {
       }
     }
 
+    // Track team chat messages
+    if (line.includes('[Team]')) {
+      const match = line.match(/\[Team\]\s+([^:]+):\s+(.+)/)
+      if (match) {
+        const playerName = match[1].trim()
+        const message = match[2].trim()
+        const regiment = this.extractRegiment(playerName)
+        
+        const chatMessage = {
+          time: timestamp,
+          player: playerName,
+          regiment,
+          message,
+          roundId: this.currentRound ? this.currentRound.id : null,
+          map: this.currentMap || 'Unknown Map'
+        }
+        this.allChatMessages.push(chatMessage)
+      }
+    }
+
     // Track respawns
     if (line.includes('[CPlayer::ClDoRespawn]')) {
       const match = line.match(/\[CPlayer::ClDoRespawn\]\s+"([^"]+)"/)
@@ -374,9 +395,11 @@ class LiveMonitorParser {
       rounds: this.allRounds,
       warnings: this.allWarnings,
       playerSessions: this.allPlayerSessions,
+      chatMessages: this.allChatMessages,
       stats: {
         totalRespawns: this.allEvents.length,
         totalRounds: this.allRounds.length,
+        totalChatMessages: this.allChatMessages.length,
         maps: [...new Set(this.allEvents.map(e => e.map))],
         players: [...new Set(this.allEvents.map(e => e.player))].length,
         regiments: [...new Set(this.allEvents.map(e => e.regiment))].length

@@ -14,6 +14,7 @@ export const useLogStore = defineStore('log', {
     warnings: [],
     stats: null,
     playerSessions: [], // Track player join/leave events
+    chatMessages: [], // Track team chat messages
     
     // UI state
     loading: false,
@@ -211,6 +212,7 @@ export const useLogStore = defineStore('log', {
         this.warnings = result.warnings
         this.stats = result.stats
         this.playerSessions = result.playerSessions || []
+        this.chatMessages = result.chatMessages || []
 
         // Set initial time range to data bounds
         if (result.events.length > 0) {
@@ -688,6 +690,7 @@ export const useLogStore = defineStore('log', {
         this.rounds = state.rounds
         this.warnings = state.warnings
         this.playerSessions = state.playerSessions
+        this.chatMessages = state.chatMessages
         this.stats = state.stats
 
         // Auto-select latest round when new round is detected

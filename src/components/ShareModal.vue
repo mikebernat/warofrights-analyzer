@@ -208,6 +208,9 @@ const analysisData = computed(() => {
 
   // Get player sessions for selected round only
   const roundPlayerSessions = logStore.playerSessions.filter(s => s.roundId === logStore.selectedRoundId)
+  
+  // Get chat messages for selected round only
+  const roundChatMessages = logStore.chatMessages.filter(msg => msg.roundId === logStore.selectedRoundId)
 
   return {
     events: roundEvents,
@@ -215,7 +218,8 @@ const analysisData = computed(() => {
     teamAssignments,
     manualReassignments: logStore.manualReassignments,
     parsingConfig: logStore.getParsingConfig(),
-    playerSessions: roundPlayerSessions
+    playerSessions: roundPlayerSessions,
+    chatMessages: roundChatMessages
   }
 })
 
