@@ -25,7 +25,8 @@
         </p>
         <p class="text-body-2 text-medium-emphasis mt-2">
           Log files are typically located in:<br>
-          <code class="text-caption">C:\Program Files (x86)\Steam\steamapps\common\War of Rights\logbackups\</code>
+          &rarr; <code class="text-caption">C:\Program Files (x86)\Steam\steamapps\common\War of Rights\game.log</code><br>or<br></br>
+          &rarr; <code class="text-caption">C:\Program Files (x86)\Steam\steamapps\common\War of Rights\logbackups\</code>
         </p>
       </div>
     </v-card-text>

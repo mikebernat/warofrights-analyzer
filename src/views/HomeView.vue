@@ -162,78 +162,122 @@
 
       <!-- Analytics Cards - Only show when round selected -->
       <template v-if="logStore.selectedRoundId !== null">
-        <v-row>
-          <!-- KPI Card -->
-          <v-col cols="12">
-            <KpiCard />
-          </v-col>
-        </v-row>
+        <!-- Tabs for organized content -->
+        <v-card class="mb-4 analysis-tabs-card" elevation="4">
+          <v-card-title class="text-h6 bg-primary pa-3">
+            <v-icon class="mr-2">mdi-chart-box</v-icon>
+            Analysis
+          </v-card-title>
+          <v-tabs 
+            v-model="analysisTab" 
+            color="primary" 
+            bg-color="surface"
+            height="60"
+            slider-color="primary"
+            show-arrows
+          >
+            <v-tab value="graphs" class="text-h6">
+              <v-icon class="mr-2" size="large">mdi-chart-line</v-icon>
+              Graphs
+            </v-tab>
+            <v-tab value="players" class="text-h6">
+              <v-icon class="mr-2" size="large">mdi-account-group</v-icon>
+              Players
+            </v-tab>
+            <v-tab value="chat" class="text-h6">
+              <v-icon class="mr-2" size="large">mdi-chat</v-icon>
+              Chat
+            </v-tab>
+          </v-tabs>
 
-        <v-row>
-          <!-- Respawns Over Time -->
-          <v-col cols="12">
-            <RespawnsTimelineChart />
-          </v-col>
-        </v-row>
+          <v-window v-model="analysisTab">
+            <!-- Tab 1: Graphs -->
+            <v-window-item value="graphs">
+              <v-container fluid>
+                <v-row>
+                  <!-- KPI Card -->
+                  <v-col cols="12">
+                    <KpiCard />
+                  </v-col>
+                </v-row>
 
-        <v-row>
-          <!-- Cumulative Respawns -->
-          <v-col cols="12">
-            <CumulativeRespawnsChart />
-          </v-col>
-        </v-row>
+                <v-row>
+                  <!-- Respawns Over Time -->
+                  <v-col cols="12">
+                    <RespawnsTimelineChart />
+                  </v-col>
+                </v-row>
 
-        <v-row>
-          <!-- Top Regiments by Players -->
-          <v-col cols="12" md="6">
-            <TopRegimentsByPlayersChart />
-          </v-col>
+                <v-row>
+                  <!-- Cumulative Respawns -->
+                  <v-col cols="12">
+                    <CumulativeRespawnsChart />
+                  </v-col>
+                </v-row>
 
-          <!-- Top Regiments by Respawns -->
-          <v-col cols="12" md="6">
-            <TopRegimentsChart />
-          </v-col>
-        </v-row>
+                <v-row>
+                  <!-- Top Regiments by Players -->
+                  <v-col cols="12" md="6">
+                    <TopRegimentsByPlayersChart />
+                  </v-col>
 
-        <v-row>
-          <!-- Top Players -->
-          <v-col cols="12" md="6">
-            <TopPlayersChart />
-          </v-col>
+                  <!-- Top Regiments by Respawns -->
+                  <v-col cols="12" md="6">
+                    <TopRegimentsChart />
+                  </v-col>
+                </v-row>
 
-          <!-- Respawns per Player -->
-          <v-col cols="12" md="6">
-            <RespawnsPerPlayerChart />
-          </v-col>
-        </v-row>
+                <v-row>
+                  <!-- Top Players -->
+                  <v-col cols="12" md="6">
+                    <TopPlayersChart />
+                  </v-col>
 
-        <v-row>
-          <!-- Regiment Timeline -->
-          <v-col cols="12">
-            <RegimentTimelineChart />
-          </v-col>
-        </v-row>
+                  <!-- Respawns per Player -->
+                  <v-col cols="12" md="6">
+                    <RespawnsPerPlayerChart />
+                  </v-col>
+                </v-row>
 
-        <v-row>
-          <!-- Regiment Real-Time Respawns -->
-          <v-col cols="12">
-            <RegimentRespawnsRealTimeChart />
-          </v-col>
-        </v-row>
+                <v-row>
+                  <!-- Regiment Timeline -->
+                  <v-col cols="12">
+                    <RegimentTimelineChart />
+                  </v-col>
+                </v-row>
 
-        <v-row>
-          <!-- Players Table -->
-          <v-col cols="12">
-            <PlayersTable />
-          </v-col>
-        </v-row>
+                <v-row>
+                  <!-- Regiment Real-Time Respawns -->
+                  <v-col cols="12">
+                    <RegimentRespawnsRealTimeChart />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-window-item>
 
-        <v-row>
-          <!-- Chat Table -->
-          <v-col cols="12">
-            <ChatTable />
-          </v-col>
-        </v-row>
+            <!-- Tab 2: Players -->
+            <v-window-item value="players">
+              <v-container fluid>
+                <v-row>
+                  <v-col cols="12">
+                    <PlayersTable />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-window-item>
+
+            <!-- Tab 3: Chat -->
+            <v-window-item value="chat">
+              <v-container fluid>
+                <v-row>
+                  <v-col cols="12">
+                    <ChatTable />
+                  </v-col>
+                </v-row>
+              </v-container>
+            </v-window-item>
+          </v-window>
+        </v-card>
       </template>
     </template>
   </v-container>
@@ -270,6 +314,9 @@ const uploadMode = ref('upload')
 
 // Assignment tab state
 const assignmentTab = ref('regiment')
+
+// Analysis tab state
+const analysisTab = ref('graphs')
 
 // Count uncategorized players
 const uncategorizedPlayersCount = computed(() => {
@@ -323,5 +370,24 @@ const clearData = () => {
   position: sticky;
   top: 64px; /* Height of Vuetify app bar */
   z-index: 10;
+}
+
+.analysis-tabs-card {
+  border: 2px solid rgba(var(--v-theme-primary), 0.3) !important;
+}
+
+.analysis-tabs-card :deep(.v-tab) {
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: none;
+  font-size: 1.1rem;
+}
+
+.analysis-tabs-card :deep(.v-tab--selected) {
+  background-color: rgba(var(--v-theme-primary), 0.1);
+}
+
+.analysis-tabs-card :deep(.v-tabs) {
+  border-bottom: 2px solid rgba(var(--v-theme-primary), 0.2);
 }
 </style>
