@@ -491,7 +491,7 @@ async function loadSharedAnalysis() {
     error.value = false
     
     const response = await shareAPI.getShare(shareId.value)
-    shareData.value = response.data
+    shareData.value = response
     
     // Load data into store
     logStore.events = shareData.value.events

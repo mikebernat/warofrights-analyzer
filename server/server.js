@@ -33,8 +33,8 @@ function generateShareId(data) {
   return `${hash}_${timestamp}`
 }
 
-// POST /share - Create a new shared analysis
-app.post('/share', shareRateLimiter, async (req, res) => {
+// Shared handler for creating shares
+async function handleCreateShare(req, res) {
   try {
     const { analysis } = req.body
 
@@ -72,10 +72,10 @@ app.post('/share', shareRateLimiter, async (req, res) => {
     console.error('Error creating share:', error)
     res.status(500).json({ error: 'Failed to create share' })
   }
-})
+}
 
-// GET /share/:shareId - Retrieve a shared analysis
-app.get('/share/:shareId', async (req, res) => {
+// Shared handler for retrieving shares
+async function handleGetShare(req, res) {
   try {
     const { shareId } = req.params
     
@@ -99,14 +99,11 @@ app.get('/share/:shareId', async (req, res) => {
     const expiresAt = new Date(shareData.metadata.expiresAt)
     if (expiresAt < new Date()) {
       // Delete expired share
-      await storage.delete(shareId).catch(() => {})
-      return res.status(410).json({ error: 'Share has expired' })
+      await storage.delete(shareId)
+      return res.status(404).json({ error: 'Share expired' })
     }
 
-    res.json({
-      success: true,
-      data: shareData
-    })
+    res.json(shareData)
   } catch (error) {
     console.error('Error retrieving share:', error)
     
@@ -116,10 +113,27 @@ app.get('/share/:shareId', async (req, res) => {
     
     res.status(500).json({ error: 'Failed to retrieve share' })
   }
+}
+
+// POST /share - Create a new shared analysis (receives /share after ingress strips /api)
+app.post('/share', shareRateLimiter, handleCreateShare)
+
+// POST /api/share - Create a new shared analysis (for Docker/local without proxy)
+app.post('/api/share', shareRateLimiter, handleCreateShare)
+
+// GET /share/:shareId - Retrieve a shared analysis (receives /share after ingress strips /api)
+app.get('/share/:shareId', handleGetShare)
+
+// GET /api/share/:shareId - Retrieve a shared analysis (for Docker/local without proxy)
+app.get('/api/share/:shareId', handleGetShare)
+
+// Health check endpoint (receives /health after ingress strips /api)
+app.get('/health', (req, res) => {
+  res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
-// Health check endpoint
-app.get('/health', (req, res) => {
+// Health check endpoint (for Docker/local without proxy)
+app.get('/api/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() })
 })
 
