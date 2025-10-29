@@ -107,7 +107,10 @@
 
       <!-- Quick Actions -->
       <v-row class="mt-4">
-        <v-col>
+        <v-col cols="auto">
+          <TeamSmartMatcher />
+        </v-col>
+        <v-col cols="auto">
           <v-btn
             color="error"
             prepend-icon="mdi-delete"
@@ -122,6 +125,8 @@
 </template>
 
 <script setup>
+import TeamSmartMatcher from './TeamSmartMatcher.vue'
+
 import { computed, ref } from 'vue'
 import { useLogStore } from '../stores/logStore'
 
