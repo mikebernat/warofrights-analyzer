@@ -194,6 +194,127 @@
               <TimeSlider />
             </v-col>
           </v-row>
+
+          <!-- Quick Filters -->
+          <v-row>
+            <v-col cols="12">
+              <div class="d-flex align-center flex-wrap">
+                <span class="text-subtitle-2 mr-3">Quick Filters:</span>
+                <!-- USA Team -->
+                <v-menu v-if="usaRegiments.length > 0">
+                  <template v-slot:activator="{ props }">
+                    <v-chip
+                      :color="isTeamSelected('USA') ? 'blue' : 'default'"
+                      :variant="isTeamSelected('USA') ? 'flat' : 'outlined'"
+                      class="mr-2"
+                    >
+                      <v-icon start>mdi-flag</v-icon>
+                      <span @click="toggleTeam('USA')">USA ({{ usaRegiments.length }})</span>
+                      <v-icon end v-bind="props">mdi-chevron-down</v-icon>
+                    </v-chip>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-for="regiment in usaRegiments"
+                      :key="regiment"
+                      @click="toggleRegiment(regiment)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedRegiments.includes(regiment)"
+                          @click.stop="toggleRegiment(regiment)"
+                        ></v-checkbox-btn>
+                      </template>
+                      <v-list-item-title>{{ regiment }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+
+                <!-- CSA Team -->
+                <v-menu v-if="csaRegiments.length > 0">
+                  <template v-slot:activator="{ props }">
+                    <v-chip
+                      :color="isTeamSelected('CSA') ? 'red' : 'default'"
+                      :variant="isTeamSelected('CSA') ? 'flat' : 'outlined'"
+                      class="mr-2"
+                    >
+                      <v-icon start>mdi-flag</v-icon>
+                      <span @click="toggleTeam('CSA')">CSA ({{ csaRegiments.length }})</span>
+                      <v-icon end v-bind="props">mdi-chevron-down</v-icon>
+                    </v-chip>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-for="regiment in csaRegiments"
+                      :key="regiment"
+                      @click="toggleRegiment(regiment)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedRegiments.includes(regiment)"
+                          @click.stop="toggleRegiment(regiment)"
+                        ></v-checkbox-btn>
+                      </template>
+                      <v-list-item-title>{{ regiment }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+
+                <!-- Unassigned -->
+                <v-menu v-if="unassignedRegiments.length > 0">
+                  <template v-slot:activator="{ props }">
+                    <v-chip
+                      :color="isTeamSelected(null) ? 'grey' : 'default'"
+                      :variant="isTeamSelected(null) ? 'flat' : 'outlined'"
+                      class="mr-2"
+                    >
+                      <v-icon start>mdi-help-circle</v-icon>
+                      <span @click="toggleTeam(null)">Unassigned ({{ unassignedRegiments.length }})</span>
+                      <v-icon end v-bind="props">mdi-chevron-down</v-icon>
+                    </v-chip>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-for="regiment in unassignedRegiments"
+                      :key="regiment"
+                      @click="toggleRegiment(regiment)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedRegiments.includes(regiment)"
+                          @click.stop="toggleRegiment(regiment)"
+                        ></v-checkbox-btn>
+                      </template>
+                      <v-list-item-title>{{ regiment }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+
+                <!-- Uncategorized -->
+                <v-chip
+                  v-if="hasUncategorized"
+                  :color="selectedRegiments.includes('Uncategorized') ? 'warning' : 'default'"
+                  :variant="selectedRegiments.includes('Uncategorized') ? 'flat' : 'outlined'"
+                  @click="toggleRegiment('Uncategorized')"
+                  class="mr-2"
+                >
+                  <v-icon start>mdi-account-question</v-icon>
+                  Uncategorized ({{ uncategorizedPlayersCount }})
+                </v-chip>
+
+                <!-- Clear Filters -->
+                <v-chip
+                  v-if="selectedRegiments.length > 0"
+                  color="error"
+                  variant="outlined"
+                  @click="clearRegimentFilters"
+                  prepend-icon="mdi-close"
+                >
+                  Clear
+                </v-chip>
+              </div>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
 
@@ -205,7 +326,7 @@
             <v-tabs 
               v-model="analysisTab" 
               color="primary" 
-              bg-color="surface"
+              bg-color="#2a2a2a"
               height="60"
               slider-color="grey-darken-2"
               show-arrows
@@ -357,6 +478,109 @@ const assignmentTab = ref('regiment')
 // Analysis tab state
 const analysisTab = ref('graphs')
 
+// Quick filters state
+const selectedRegiments = ref([])
+
+// Get regiments by team
+const usaRegiments = computed(() => {
+  if (logStore.selectedRoundId === null) return []
+  const roundId = logStore.selectedRoundId
+  const roundEvents = logStore.events.filter(e => e.roundId === roundId)
+  const regiments = new Set(roundEvents.map(e => e.regiment))
+  const usa = []
+  regiments.forEach(regiment => {
+    if (regiment !== 'Uncategorized' && logStore.getRegimentTeam(regiment, roundId) === 'USA') {
+      usa.push(regiment)
+    }
+  })
+  return usa.sort()
+})
+
+const csaRegiments = computed(() => {
+  if (logStore.selectedRoundId === null) return []
+  const roundId = logStore.selectedRoundId
+  const roundEvents = logStore.events.filter(e => e.roundId === roundId)
+  const regiments = new Set(roundEvents.map(e => e.regiment))
+  const csa = []
+  regiments.forEach(regiment => {
+    if (regiment !== 'Uncategorized' && logStore.getRegimentTeam(regiment, roundId) === 'CSA') {
+      csa.push(regiment)
+    }
+  })
+  return csa.sort()
+})
+
+const unassignedRegiments = computed(() => {
+  if (logStore.selectedRoundId === null) return []
+  const roundId = logStore.selectedRoundId
+  const roundEvents = logStore.events.filter(e => e.roundId === roundId)
+  const regiments = new Set(roundEvents.map(e => e.regiment))
+  const unassigned = []
+  regiments.forEach(regiment => {
+    if (regiment !== 'Uncategorized' && !logStore.getRegimentTeam(regiment, roundId)) {
+      unassigned.push(regiment)
+    }
+  })
+  return unassigned.sort()
+})
+
+// Check if a team is selected (all regiments from that team)
+function isTeamSelected(team) {
+  let teamRegiments = []
+  if (team === 'USA') teamRegiments = usaRegiments.value
+  else if (team === 'CSA') teamRegiments = csaRegiments.value
+  else teamRegiments = unassignedRegiments.value
+  
+  if (teamRegiments.length === 0) return false
+  return teamRegiments.every(r => selectedRegiments.value.includes(r))
+}
+
+// Toggle entire team
+function toggleTeam(team) {
+  let teamRegiments = []
+  if (team === 'USA') teamRegiments = usaRegiments.value
+  else if (team === 'CSA') teamRegiments = csaRegiments.value
+  else teamRegiments = unassignedRegiments.value
+  
+  const allSelected = isTeamSelected(team)
+  
+  if (allSelected) {
+    // Remove all team regiments
+    selectedRegiments.value = selectedRegiments.value.filter(r => !teamRegiments.includes(r))
+  } else {
+    // Add all team regiments
+    teamRegiments.forEach(r => {
+      if (!selectedRegiments.value.includes(r)) {
+        selectedRegiments.value.push(r)
+      }
+    })
+  }
+  
+  applyRegimentFilter()
+}
+
+// Toggle individual regiment
+function toggleRegiment(regiment) {
+  const index = selectedRegiments.value.indexOf(regiment)
+  if (index > -1) {
+    selectedRegiments.value.splice(index, 1)
+  } else {
+    selectedRegiments.value.push(regiment)
+  }
+  applyRegimentFilter()
+}
+
+// Apply regiment filter to store
+function applyRegimentFilter() {
+  logStore.selectedRegimentFilter = selectedRegiments.value
+}
+
+// Clear all regiment filters
+function clearRegimentFilters() {
+  selectedRegiments.value = []
+  logStore.selectedRegimentFilter = []
+}
+
 // Count uncategorized players
 const uncategorizedPlayersCount = computed(() => {
   const players = new Set()
@@ -366,6 +590,11 @@ const uncategorizedPlayersCount = computed(() => {
     }
   })
   return players.size
+})
+
+// Check if there are uncategorized players
+const hasUncategorized = computed(() => {
+  return uncategorizedPlayersCount.value > 0
 })
 
 // Count unassigned regiments for selected round
@@ -419,7 +648,7 @@ const clearData = () => {
 
 .sticky-tabs-wrapper {
   position: sticky;
-  top: calc(129px + 100px); /* App bar (64px) + Step 4 card height */
+  top: calc(185px + 100px); /* App bar (64px) + Step 4 card height */
   z-index: 9;
   margin-bottom: 0;
 }
@@ -429,7 +658,20 @@ const clearData = () => {
 }
 
 .analysis-tabs-card {
-  border: 1px solid rgba(128, 128, 128, 0.3) !important;
+  border: none !important;
+  background-color: #2a2a2a !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs) {
+  background-color: #2a2a2a !important;
+}
+
+.analysis-tabs-card :deep(.v-slide-group__content) {
+  border-bottom: 3px solid #424242 !important;
+}
+
+.analysis-tabs-card :deep(.v-tab.v-tab.v-btn) {
+  border-bottom: 3px solid #424242;
 }
 
 .analysis-tabs-card :deep(.v-tabs-window-item) {
@@ -442,13 +684,20 @@ const clearData = () => {
   letter-spacing: 0.5px;
   text-transform: none;
   font-size: 1.1rem;
+  background-color: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.analysis-tabs-card :deep(.v-tab) .v-icon {
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .analysis-tabs-card :deep(.v-tab--selected) {
-  background-color: rgb(var(--v-theme-primary));
+  background-color: #3a3a3a !important;
   color: white !important;
   outline: none !important;
   box-shadow: none !important;
+  border-bottom: 3px solid #2196F3 !important;
 }
 
 .analysis-tabs-card :deep(.v-tab--selected) .v-icon {

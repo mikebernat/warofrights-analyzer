@@ -16,7 +16,16 @@
           <v-expansion-panel-title>
             <template v-slot:default="{ expanded }">
               <div class="d-flex align-center justify-space-between w-100">
-                <span class="font-weight-bold">{{ regiment.name }}</span>
+                <div class="d-flex align-center">
+                  <v-chip
+                    v-if="regiment.team"
+                    size="x-small"
+                    :class="['team-chip', 'mr-3', regiment.team === 'USA' ? 'team-usa' : 'team-csa']"
+                  >
+                    {{ regiment.team }}
+                  </v-chip>
+                  <span class="font-weight-bold">{{ regiment.name }}</span>
+                </div>
                 <div class="d-flex align-center gap-2">
                   <v-chip size="small" color="primary">
                     {{ regiment.players.length }} players, {{ regiment.totalRespawns }} respawns
@@ -114,11 +123,15 @@ const regimentGroups = computed(() => {
       
       const totalRespawns = playerList.reduce((sum, p) => sum + p.respawns, 0)
       
+      // Get team assignment for this regiment
+      const team = logStore.getRegimentTeam(regiment, logStore.selectedRoundId)
+      
       return {
         name: regiment,
         players: playerList,
         totalRespawns,
-        playerCount: playerList.length
+        playerCount: playerList.length,
+        team: team
       }
     })
     .sort((a, b) => b.playerCount - a.playerCount)
@@ -151,3 +164,18 @@ const copyRegimentToClipboard = async (regiment) => {
   }
 }
 </script>
+
+<style scoped>
+.team-chip {
+  font-weight: 600;
+  color: white !important;
+}
+
+.team-usa {
+  background-color: #2196F3 !important;
+}
+
+.team-csa {
+  background-color: #F44336 !important;
+}
+</style>

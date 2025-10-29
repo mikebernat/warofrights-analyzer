@@ -25,6 +25,7 @@ export const useLogStore = defineStore('log', {
     timeRange: [0, 86400], // Default to full day in seconds
     filterText: '',
     selectedRoundId: null, // null means all rounds
+    selectedRegimentFilter: [], // Quick filter for specific regiments
     
     // Team assignments per round
     regimentTeams: {}, // { roundId: { regimentName: 'USA' | 'CSA' } }
@@ -60,6 +61,13 @@ export const useLogStore = defineStore('log', {
         filtered = filtered.filter(event => {
           return event.player.toLowerCase().includes(searchText) ||
                  event.regiment.toLowerCase().includes(searchText)
+        })
+      }
+
+      // Filter by selected regiments (quick filter)
+      if (state.selectedRegimentFilter && state.selectedRegimentFilter.length > 0) {
+        filtered = filtered.filter(event => {
+          return state.selectedRegimentFilter.includes(event.regiment)
         })
       }
 

@@ -56,31 +56,34 @@
         <v-card-text class="pt-4">
           <!-- Round Info -->
           <v-row class="mb-4">
-            <v-col cols="12" md="3">
-              <div class="text-caption text-medium-emphasis">Map</div>
-              <div class="text-h6">{{ shareData.roundInfo.map }}</div>
-            </v-col>
-            <v-col cols="12" md="3">
-              <div class="text-caption text-medium-emphasis">Duration</div>
-              <div class="text-h6">{{ formatDuration(shareData.roundInfo.endTime - shareData.roundInfo.startTime) }}</div>
-            </v-col>
-            <v-col cols="12" md="3">
-              <div class="text-caption text-medium-emphasis">Winner</div>
-              <div class="text-h6">
-                <v-chip 
-                  v-if="shareData.roundInfo.winner"
-                  :color="shareData.roundInfo.winner === 'USA' ? 'blue' : 'red'"
-                >
-                  {{ shareData.roundInfo.winner }}
-                </v-chip>
-                <v-chip v-else color="grey">
-                  N/A
-                </v-chip>
+            <v-col cols="12">
+              <div class="d-flex align-center justify-space-between flex-wrap" style="gap: 16px;">
+                <div class="d-flex align-center">
+                  <span class="text-caption text-medium-emphasis mr-2">Map:</span>
+                  <span class="text-h6">{{ shareData.roundInfo.map }}</span>
+                </div>
+                <div class="d-flex align-center">
+                  <span class="text-caption text-medium-emphasis mr-2">Duration:</span>
+                  <span class="text-h6">{{ formatDuration(shareData.roundInfo.endTime - shareData.roundInfo.startTime) }}</span>
+                </div>
+                <div class="d-flex align-center">
+                  <span class="text-caption text-medium-emphasis mr-2">Winner:</span>
+                  <v-chip 
+                    v-if="shareData.roundInfo.winner"
+                    :color="shareData.roundInfo.winner === 'USA' ? 'blue' : 'red'"
+                    size="small"
+                  >
+                    {{ shareData.roundInfo.winner }}
+                  </v-chip>
+                  <v-chip v-else color="grey" size="small">
+                    N/A
+                  </v-chip>
+                </div>
+                <div class="d-flex align-center">
+                  <span class="text-caption text-medium-emphasis mr-2">Total Respawns:</span>
+                  <span class="text-h6">{{ shareData.events.length }}</span>
+                </div>
               </div>
-            </v-col>
-            <v-col cols="12" md="3">
-              <div class="text-caption text-medium-emphasis">Total Respawns</div>
-              <div class="text-h6">{{ shareData.events.length }}</div>
             </v-col>
           </v-row>
           
@@ -93,6 +96,127 @@
               <TimeSlider />
             </v-col>
           </v-row>
+
+          <!-- Quick Filters -->
+          <v-row>
+            <v-col cols="12">
+              <div class="d-flex align-center flex-wrap">
+                <span class="text-subtitle-2 mr-3">Quick Filters:</span>
+                <!-- USA Team -->
+                <v-menu v-if="usaRegiments.length > 0">
+                  <template v-slot:activator="{ props }">
+                    <v-chip
+                      :color="isTeamSelected('USA') ? 'blue' : 'default'"
+                      :variant="isTeamSelected('USA') ? 'flat' : 'outlined'"
+                      class="mr-2"
+                    >
+                      <v-icon start>mdi-flag</v-icon>
+                      <span @click="toggleTeam('USA')">USA ({{ usaRegiments.length }})</span>
+                      <v-icon end v-bind="props">mdi-chevron-down</v-icon>
+                    </v-chip>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-for="regiment in usaRegiments"
+                      :key="regiment"
+                      @click="toggleRegiment(regiment)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedRegiments.includes(regiment)"
+                          @click.stop="toggleRegiment(regiment)"
+                        ></v-checkbox-btn>
+                      </template>
+                      <v-list-item-title>{{ regiment }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+
+                <!-- CSA Team -->
+                <v-menu v-if="csaRegiments.length > 0">
+                  <template v-slot:activator="{ props }">
+                    <v-chip
+                      :color="isTeamSelected('CSA') ? 'red' : 'default'"
+                      :variant="isTeamSelected('CSA') ? 'flat' : 'outlined'"
+                      class="mr-2"
+                    >
+                      <v-icon start>mdi-flag</v-icon>
+                      <span @click="toggleTeam('CSA')">CSA ({{ csaRegiments.length }})</span>
+                      <v-icon end v-bind="props">mdi-chevron-down</v-icon>
+                    </v-chip>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-for="regiment in csaRegiments"
+                      :key="regiment"
+                      @click="toggleRegiment(regiment)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedRegiments.includes(regiment)"
+                          @click.stop="toggleRegiment(regiment)"
+                        ></v-checkbox-btn>
+                      </template>
+                      <v-list-item-title>{{ regiment }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+
+                <!-- Unassigned -->
+                <v-menu v-if="unassignedRegiments.length > 0">
+                  <template v-slot:activator="{ props }">
+                    <v-chip
+                      :color="isTeamSelected(null) ? 'grey' : 'default'"
+                      :variant="isTeamSelected(null) ? 'flat' : 'outlined'"
+                      class="mr-2"
+                    >
+                      <v-icon start>mdi-help-circle</v-icon>
+                      <span @click="toggleTeam(null)">Unassigned ({{ unassignedRegiments.length }})</span>
+                      <v-icon end v-bind="props">mdi-chevron-down</v-icon>
+                    </v-chip>
+                  </template>
+                  <v-list density="compact">
+                    <v-list-item
+                      v-for="regiment in unassignedRegiments"
+                      :key="regiment"
+                      @click="toggleRegiment(regiment)"
+                    >
+                      <template v-slot:prepend>
+                        <v-checkbox-btn
+                          :model-value="selectedRegiments.includes(regiment)"
+                          @click.stop="toggleRegiment(regiment)"
+                        ></v-checkbox-btn>
+                      </template>
+                      <v-list-item-title>{{ regiment }}</v-list-item-title>
+                    </v-list-item>
+                  </v-list>
+                </v-menu>
+
+                <!-- Uncategorized -->
+                <v-chip
+                  v-if="hasUncategorized"
+                  :color="selectedRegiments.includes('Uncategorized') ? 'warning' : 'default'"
+                  :variant="selectedRegiments.includes('Uncategorized') ? 'flat' : 'outlined'"
+                  @click="toggleRegiment('Uncategorized')"
+                  class="mr-2"
+                >
+                  <v-icon start>mdi-account-question</v-icon>
+                  Uncategorized ({{ uncategorizedCount }})
+                </v-chip>
+
+                <!-- Clear Filters -->
+                <v-chip
+                  v-if="selectedRegiments.length > 0"
+                  color="error"
+                  variant="outlined"
+                  @click="clearRegimentFilters"
+                  prepend-icon="mdi-close"
+                >
+                  Clear
+                </v-chip>
+              </div>
+            </v-col>
+          </v-row>
         </v-card-text>
       </v-card>
 
@@ -102,7 +226,7 @@
           <v-tabs 
             v-model="analysisTab" 
             color="primary" 
-            bg-color="surface"
+            bg-color="#2a2a2a"
             height="60"
             slider-color="grey-darken-2"
             show-arrows
@@ -236,6 +360,96 @@ const error = ref(false)
 const errorMessage = ref('')
 const shareData = ref(null)
 const analysisTab = ref('graphs')
+const selectedRegiments = ref([])
+
+// Get regiments by team
+const usaRegiments = computed(() => {
+  if (!shareData.value) return []
+  const regiments = []
+  Object.entries(shareData.value.teamAssignments).forEach(([regiment, team]) => {
+    if (team === 'USA') regiments.push(regiment)
+  })
+  return regiments.sort()
+})
+
+const csaRegiments = computed(() => {
+  if (!shareData.value) return []
+  const regiments = []
+  Object.entries(shareData.value.teamAssignments).forEach(([regiment, team]) => {
+    if (team === 'CSA') regiments.push(regiment)
+  })
+  return regiments.sort()
+})
+
+const unassignedRegiments = computed(() => {
+  if (!shareData.value) return []
+  const allRegiments = new Set(shareData.value.events.map(e => e.regiment))
+  const assignedRegiments = new Set(Object.keys(shareData.value.teamAssignments))
+  const unassigned = []
+  allRegiments.forEach(regiment => {
+    if (!assignedRegiments.has(regiment) && regiment !== 'Uncategorized') {
+      unassigned.push(regiment)
+    }
+  })
+  return unassigned.sort()
+})
+
+// Check if a team is selected (all regiments from that team)
+function isTeamSelected(team) {
+  let teamRegiments = []
+  if (team === 'USA') teamRegiments = usaRegiments.value
+  else if (team === 'CSA') teamRegiments = csaRegiments.value
+  else teamRegiments = unassignedRegiments.value
+  
+  if (teamRegiments.length === 0) return false
+  return teamRegiments.every(r => selectedRegiments.value.includes(r))
+}
+
+// Toggle entire team
+function toggleTeam(team) {
+  let teamRegiments = []
+  if (team === 'USA') teamRegiments = usaRegiments.value
+  else if (team === 'CSA') teamRegiments = csaRegiments.value
+  else teamRegiments = unassignedRegiments.value
+  
+  const allSelected = isTeamSelected(team)
+  
+  if (allSelected) {
+    // Remove all team regiments
+    selectedRegiments.value = selectedRegiments.value.filter(r => !teamRegiments.includes(r))
+  } else {
+    // Add all team regiments
+    teamRegiments.forEach(r => {
+      if (!selectedRegiments.value.includes(r)) {
+        selectedRegiments.value.push(r)
+      }
+    })
+  }
+  
+  applyRegimentFilter()
+}
+
+// Toggle individual regiment
+function toggleRegiment(regiment) {
+  const index = selectedRegiments.value.indexOf(regiment)
+  if (index > -1) {
+    selectedRegiments.value.splice(index, 1)
+  } else {
+    selectedRegiments.value.push(regiment)
+  }
+  applyRegimentFilter()
+}
+
+// Apply regiment filter to store
+function applyRegimentFilter() {
+  logStore.selectedRegimentFilter = selectedRegiments.value
+}
+
+// Clear all regiment filters
+function clearRegimentFilters() {
+  selectedRegiments.value = []
+  logStore.selectedRegimentFilter = []
+}
 
 // Computed properties
 const uniquePlayersCount = computed(() => {
@@ -246,6 +460,23 @@ const uniquePlayersCount = computed(() => {
 const uniqueRegimentsCount = computed(() => {
   const regiments = new Set(logStore.filteredEvents.map(e => e.regiment))
   return regiments.size
+})
+
+// Count uncategorized players
+const uncategorizedCount = computed(() => {
+  if (!shareData.value) return 0
+  const players = new Set()
+  shareData.value.events.forEach(event => {
+    if (event.regiment === 'Uncategorized') {
+      players.add(event.player)
+    }
+  })
+  return players.size
+})
+
+// Check if there are uncategorized players
+const hasUncategorized = computed(() => {
+  return uncategorizedCount.value > 0
 })
 
 const timeRangeDisplay = computed(() => {
@@ -323,7 +554,7 @@ onMounted(() => {
 
 .sticky-tabs-wrapper {
   position: sticky;
-  top: calc(223px + 100px); /* App bar (64px) + Filters card height */
+  top: calc(257px + 100px); /* App bar (64px) + Filters card height */
   z-index: 9;
   margin-bottom: 0;
 }
@@ -333,7 +564,20 @@ onMounted(() => {
 }
 
 .analysis-tabs-card {
-  border: 1px solid rgba(128, 128, 128, 0.3) !important;
+  border: none !important;
+  background-color: #2a2a2a !important;
+}
+
+.analysis-tabs-card :deep(.v-tabs) {
+  background-color: #2a2a2a !important;
+}
+
+.analysis-tabs-card :deep(.v-slide-group__content) {
+  border-bottom: 3px solid #424242 !important;
+}
+
+.analysis-tabs-card :deep(.v-tab.v-tab.v-btn) {
+  border-bottom: 3px solid #424242;
 }
 
 .analysis-tabs-card :deep(.v-tabs-window-item) {
@@ -346,13 +590,20 @@ onMounted(() => {
   letter-spacing: 0.5px;
   text-transform: none;
   font-size: 1.1rem;
+  background-color: #2a2a2a !important;
+  color: rgba(255, 255, 255, 0.7) !important;
+}
+
+.analysis-tabs-card :deep(.v-tab) .v-icon {
+  color: rgba(255, 255, 255, 0.7) !important;
 }
 
 .analysis-tabs-card :deep(.v-tab--selected) {
-  background-color: rgb(var(--v-theme-primary));
+  background-color: #3a3a3a !important;
   color: white !important;
   outline: none !important;
   box-shadow: none !important;
+  border-bottom: 3px solid #2196F3 !important;
 }
 
 .analysis-tabs-card :deep(.v-tab--selected) .v-icon {
